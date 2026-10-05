@@ -39,8 +39,26 @@ export interface Features {
   T: number;
 }
 
-/** 정확한 유리수 직렬화 형식. 예: "7/24", "0/1" */
-export type RationalString = `${number}/${number}`;
+/**
+ * `Features` 외의 필드(특히 `age`)를 가진 객체를 실수로 넘기지 못하게 한다.
+ *
+ * docs/02: "나이는 G·A·FI·사례 거리 계산 함수의 입력에 포함하지 않는다."
+ * 파라미터 타입을 그냥 `Features` 로 두면 구조적 타이핑 때문에 age 가 달린
+ * 프로필 객체를 그대로 넘겨도 통과한다(변수로 넘기면 excess property check 가
+ * 적용되지 않는다). `T` 를 교차 타입 안에 두어 추론을 살리고 남는 키를
+ * `never` 로 매핑해, **변수든 리터럴이든** 컴파일 오류가 나게 한다.
+ *
+ * 호출 측은 `{ E, P, R, T }` 만 추려서 넘겨야 한다.
+ */
+export type FeaturesOnly<T> = T & {
+  [K in Exclude<keyof T, keyof Features>]: never;
+};
+
+/**
+ * 정확한 유리수 직렬화 형식. 예: "7/24", "0/1", "-1/24".
+ * bigint 로 계산하므로 `${bigint}` 패턴을 쓴다(server/rules/rational.ts).
+ */
+export type RationalString = `${bigint}/${bigint}`;
 
 /** 실험 진행 단계. docs/06 전체 흐름의 단계 번호를 따른다(5번은 원문에 없음). */
 export type Stage =
