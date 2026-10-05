@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import {
   PREVIEW_CONDITIONS,
+  PREVIEW_EXPLANATIONS,
   PREVIEW_RISKS,
   isPreviewEnabled,
 } from "@/server/preview/guard";
@@ -30,6 +31,32 @@ const SCREENS = [
       "설명 3유형만 다름. 권위 단서는 docs/01 상 AI 제시 단계에서만 표시하므로 authority low/high 화면이 동일하다 (맥락별 3장, 합계 6장)",
   },
 ] as const;
+
+/**
+ * 캡처해야 할 행 목록.
+ *
+ * S9 는 권위 단서와 설명이 모두 달라지므로 6조건 전부를 찍는다.
+ * S10 은 권위 단서를 표시하지 않으므로(docs/01 "노출 시점") authority 를 바꿔도
+ * 화면이 같다. 중복 캡처를 막기 위해 설명 3유형만 행으로 보여 준다.
+ */
+function rowsFor(screenId: "s9" | "s10") {
+  if (screenId === "s9") {
+    return PREVIEW_CONDITIONS.map((c) => ({
+      key: c.label,
+      label: c.label,
+      authority: c.authority,
+      authorityLabel: c.authority as string,
+      explanation: c.explanation,
+    }));
+  }
+  return PREVIEW_EXPLANATIONS.map((explanation) => ({
+    key: explanation,
+    label: explanation === "none" ? "*-N" : explanation === "fi" ? "*-F" : "*-FC",
+    authority: "low" as const,
+    authorityLabel: "무관",
+    explanation,
+  }));
+}
 
 export default function PreviewIndex() {
   if (!isPreviewEnabled()) notFound();
@@ -73,27 +100,27 @@ export default function PreviewIndex() {
               </tr>
             </thead>
             <tbody>
-              {PREVIEW_CONDITIONS.map((condition) => (
-                <tr key={condition.label} className="border-border border-b">
-                  <td className="py-1.5 pr-3 font-mono">{condition.label}</td>
+              {rowsFor(screen.id).map((row) => (
+                <tr key={row.key} className="border-border border-b">
+                  <td className="py-1.5 pr-3 font-mono">{row.label}</td>
                   <td className="text-muted py-1.5 pr-3 font-mono">
-                    {condition.authority}
+                    {row.authorityLabel}
                   </td>
                   <td className="text-muted py-1.5 pr-3 font-mono">
-                    {condition.explanation}
+                    {row.explanation}
                   </td>
                   {PREVIEW_RISKS.map((risk) => (
                     <td key={risk} className="py-1.5 pr-3">
                       <Link
                         className="underline"
-                        href={`/preview/${screen.id}?authority=${condition.authority}&explanation=${condition.explanation}&risk=${risk}`}
+                        href={`/preview/${screen.id}?authority=${row.authority}&explanation=${row.explanation}&risk=${risk}`}
                       >
                         열기
                       </Link>
                       <span className="text-muted mx-1.5">/</span>
                       <Link
                         className="underline"
-                        href={`/preview/${screen.id}?authority=${condition.authority}&explanation=${condition.explanation}&risk=${risk}&capture=1`}
+                        href={`/preview/${screen.id}?authority=${row.authority}&explanation=${row.explanation}&risk=${risk}&capture=1`}
                       >
                         캡처
                       </Link>

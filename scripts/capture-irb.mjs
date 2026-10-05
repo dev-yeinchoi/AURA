@@ -2,8 +2,14 @@
 /**
  * IRB 서류용 화면 캡처 (연구자용).
  *
- * 조건 때문에 달라지는 화면 S9·S10 을 6조건 × 2맥락으로 캡처한다.
- * 기준 해상도 1280×720, 연구자 전환 막대 없음(capture=1).
+ * 조건 때문에 달라지는 화면 S9·S10 을 캡처한다. 기준 해상도 1280×720,
+ * 연구자 전환 막대 없음(capture=1).
+ *
+ *   S9  — 권위 배지·안내문 + 설명이 모두 달라진다 → 6조건 × 2맥락 = 12장
+ *   S10 — 권위 단서를 표시하지 않으므로(docs/01 "노출 시점": 권위 안내는 AI
+ *         제시 단계에서 표시) 설명 3유형만 달라진다 → 3유형 × 2맥락 = 6장
+ *
+ * 합계 18장. S10 에서 authority 를 바꿔도 화면이 같으므로 찍지 않는다.
  *
  * 사용:
  *   1) 다른 터미널에서  pnpm dev
@@ -51,26 +57,33 @@ try {
 
 await mkdir(OUT, { recursive: true });
 
+async function shoot(name, url) {
+  await run(CHROME, [
+    "--headless",
+    "--disable-gpu",
+    "--hide-scrollbars",
+    "--force-device-scale-factor=1",
+    "--window-size=1280,720",
+    `--screenshot=${join(OUT, name)}`,
+    url,
+  ]);
+  console.log(`  ${name}`);
+}
+
 let count = 0;
 for (const screen of SCREENS) {
+  // S10 은 권위 단서를 표시하지 않으므로 authority 를 한 값으로 고정한다.
+  const authorities = screen === "s10" ? ["low"] : AUTHORITIES;
   for (const risk of RISKS) {
-    for (const authority of AUTHORITIES) {
+    for (const authority of authorities) {
       for (const explanation of EXPLANATIONS) {
-        const name = `${screen}_risk-${risk}_auth-${authority}_exp-${explanation}.png`;
+        const suffix = screen === "s10" ? "" : `_auth-${authority}`;
+        const name = `${screen}_risk-${risk}${suffix}_exp-${explanation}.png`;
         const url =
           `${BASE}/preview/${screen}?authority=${authority}` +
           `&explanation=${explanation}&risk=${risk}&capture=1`;
-        await run(CHROME, [
-          "--headless",
-          "--disable-gpu",
-          "--hide-scrollbars",
-          "--force-device-scale-factor=1",
-          "--window-size=1280,720",
-          `--screenshot=${join(OUT, name)}`,
-          url,
-        ]);
+        await shoot(name, url);
         count += 1;
-        console.log(`  ${name}`);
       }
     }
   }
@@ -78,5 +91,8 @@ for (const screen of SCREENS) {
 
 console.log(`\nok: ${count}장 저장 → ${OUT}`);
 console.log(
-  "참고: S10 은 현재 명세상 권위 단서를 표시하지 않으므로 authority low/high 캡처가 동일합니다.",
+  "S9 12장(6조건×2맥락) + S10 6장(설명 3유형×2맥락). S10 은 권위 단서를 표시하지",
+);
+console.log(
+  "않으므로 authority 를 바꿔도 화면이 같아 파일 이름에 authority 를 넣지 않았습니다.",
 );
