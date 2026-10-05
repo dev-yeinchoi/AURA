@@ -11,10 +11,20 @@ node_modules/
 # Next.js
 .next/
 out/
+build/
 next-env.d.ts
+*.tsbuildinfo
 
-# Env
+# Vercel
+.vercel
+
+# Supabase CLI (local stack state)
+supabase/.temp/
+supabase/.branches/
+
+# Env — .env.example 만 커밋한다
 .env
+.env.local
 .env*.local
 
 # Python (scripts/)

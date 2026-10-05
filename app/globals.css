@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/*
+ * 실험 인터페이스는 중립적·단순하게 유지한다(CLAUDE.md 디자인).
+ * 참가자 간 화면이 달라지면 조건 통제가 깨지므로
+ * prefers-color-scheme 기반 다크 모드는 두지 않는다. 단일 라이트 테마 고정.
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --muted: #5c5c5c;
+  --border: #d4d4d4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+    "Malgun Gothic", "Noto Sans KR", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* 키보드 초점 표시를 항상 보이게 한다(접근성 규칙). */
+:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
