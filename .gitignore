@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Claude Code (local, per-machine)
+.claude/settings.local.json
+
+# Node
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Env
+.env
+.env*.local
+
+# Python (scripts/)
+__pycache__/
+*.py[cod]
+.venv/
+
+# Logs & coverage
+*.log
+coverage/

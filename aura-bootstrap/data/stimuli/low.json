@@ -1,0 +1,385 @@
+{
+  "stimulus_version": "rev08",
+  "risk": "low",
+  "tau": 2,
+  "rule_versions": {
+    "G": "G-rev08",
+    "A": "A-rev08",
+    "FI": "FI-rev08",
+    "case": "case-rev08"
+  },
+  "baseline_v0": "1/8",
+  "_note": "SERVER-ONLY. G and type never leave the server. A, fi, case are returned only after the initial-judgment lock.",
+  "profiles": [
+    {
+      "profile_id": "L01",
+      "age": 32,
+      "E": 6,
+      "P": 5,
+      "R": 3,
+      "T": 2,
+      "G": 1,
+      "A": 1,
+      "type": "TP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "LC01",
+      "case_distance": "13/72",
+      "case_tie_count": 16
+    },
+    {
+      "profile_id": "L02",
+      "age": 47,
+      "E": 12,
+      "P": 6,
+      "R": 4,
+      "T": 3,
+      "G": 1,
+      "A": 1,
+      "type": "TP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "LC15",
+      "case_distance": "1/24",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "L03",
+      "age": 39,
+      "E": 9,
+      "P": 5,
+      "R": 4,
+      "T": 2.5,
+      "G": 1,
+      "A": 1,
+      "type": "TP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "LC11",
+      "case_distance": "1/18",
+      "case_tie_count": 4
+    },
+    {
+      "profile_id": "L04",
+      "age": 28,
+      "E": 8,
+      "P": 5,
+      "R": 3,
+      "T": 1.5,
+      "G": 0,
+      "A": 1,
+      "type": "FP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "LC09",
+      "case_distance": "11/72",
+      "case_tie_count": 8
+    },
+    {
+      "profile_id": "L05",
+      "age": 51,
+      "E": 15,
+      "P": 6,
+      "R": 4,
+      "T": 1,
+      "G": 0,
+      "A": 1,
+      "type": "FP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "LC15",
+      "case_distance": "1/12",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "L06",
+      "age": 43,
+      "E": 0,
+      "P": 6,
+      "R": 3,
+      "T": 2,
+      "G": 1,
+      "A": 0,
+      "type": "FN",
+      "fi": {
+        "E": "-7/24",
+        "P": "1/12",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "LC05",
+      "case_distance": "1/8",
+      "case_tie_count": 4
+    },
+    {
+      "profile_id": "L07",
+      "age": 30,
+      "E": 4,
+      "P": 6,
+      "R": 4,
+      "T": 3,
+      "G": 1,
+      "A": 0,
+      "type": "FN",
+      "fi": {
+        "E": "-7/24",
+        "P": "1/12",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "LC07",
+      "case_distance": "1/72",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "L08",
+      "age": 54,
+      "E": 3,
+      "P": 5,
+      "R": 3,
+      "T": 2,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "-7/24",
+        "P": "1/12",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "LC01",
+      "case_distance": "5/36",
+      "case_tie_count": 8
+    },
+    {
+      "profile_id": "L09",
+      "age": 35,
+      "E": 10,
+      "P": 4,
+      "R": 4,
+      "T": 3,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "1/12",
+        "P": "-7/24",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "LC11",
+      "case_distance": "1/72",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "L10",
+      "age": 45,
+      "E": 14,
+      "P": 6,
+      "R": 2,
+      "T": 3,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "1/12",
+        "P": "1/12",
+        "R": "-7/24",
+        "T": "0/1"
+      },
+      "case_id": "LC13",
+      "case_distance": "5/72",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "L11",
+      "age": 27,
+      "E": 2,
+      "P": 4,
+      "R": 2,
+      "T": 1,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "-1/24",
+        "P": "-1/24",
+        "R": "-1/24",
+        "T": "0/1"
+      },
+      "case_id": "LC01",
+      "case_distance": "1/72",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "L12",
+      "age": 41,
+      "E": 5,
+      "P": 6,
+      "R": 4,
+      "T": 1.5,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "-7/24",
+        "P": "1/12",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "LC07",
+      "case_distance": "1/36",
+      "case_tie_count": 2
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "LC01",
+      "E": 3,
+      "P": 4,
+      "R": 2,
+      "T": 1,
+      "A": 0
+    },
+    {
+      "case_id": "LC02",
+      "E": 3,
+      "P": 4,
+      "R": 2,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "LC03",
+      "E": 3,
+      "P": 4,
+      "R": 4,
+      "T": 1,
+      "A": 0
+    },
+    {
+      "case_id": "LC04",
+      "E": 3,
+      "P": 4,
+      "R": 4,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "LC05",
+      "E": 3,
+      "P": 6,
+      "R": 2,
+      "T": 1,
+      "A": 0
+    },
+    {
+      "case_id": "LC06",
+      "E": 3,
+      "P": 6,
+      "R": 2,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "LC07",
+      "E": 3,
+      "P": 6,
+      "R": 4,
+      "T": 1,
+      "A": 0
+    },
+    {
+      "case_id": "LC08",
+      "E": 3,
+      "P": 6,
+      "R": 4,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "LC09",
+      "E": 9,
+      "P": 4,
+      "R": 2,
+      "T": 1,
+      "A": 0
+    },
+    {
+      "case_id": "LC10",
+      "E": 9,
+      "P": 4,
+      "R": 2,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "LC11",
+      "E": 9,
+      "P": 4,
+      "R": 4,
+      "T": 1,
+      "A": 0
+    },
+    {
+      "case_id": "LC12",
+      "E": 9,
+      "P": 4,
+      "R": 4,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "LC13",
+      "E": 9,
+      "P": 6,
+      "R": 2,
+      "T": 1,
+      "A": 0
+    },
+    {
+      "case_id": "LC14",
+      "E": 9,
+      "P": 6,
+      "R": 2,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "LC15",
+      "E": 9,
+      "P": 6,
+      "R": 4,
+      "T": 1,
+      "A": 1
+    },
+    {
+      "case_id": "LC16",
+      "E": 9,
+      "P": 6,
+      "R": 4,
+      "T": 3,
+      "A": 1
+    }
+  ]
+}

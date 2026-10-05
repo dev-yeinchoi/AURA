@@ -1,0 +1,385 @@
+{
+  "stimulus_version": "rev08",
+  "risk": "high",
+  "tau": 4,
+  "rule_versions": {
+    "G": "G-rev08",
+    "A": "A-rev08",
+    "FI": "FI-rev08",
+    "case": "case-rev08"
+  },
+  "baseline_v0": "1/8",
+  "_note": "SERVER-ONLY. G and type never leave the server. A, fi, case are returned only after the initial-judgment lock.",
+  "profiles": [
+    {
+      "profile_id": "H01",
+      "age": 48,
+      "E": 14,
+      "P": 5,
+      "R": 4,
+      "T": 4,
+      "G": 1,
+      "A": 1,
+      "type": "TP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "HC11",
+      "case_distance": "1/8",
+      "case_tie_count": 4
+    },
+    {
+      "profile_id": "H02",
+      "age": 31,
+      "E": 7,
+      "P": 5,
+      "R": 3,
+      "T": 5,
+      "G": 1,
+      "A": 1,
+      "type": "TP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "HC09",
+      "case_distance": "1/6",
+      "case_tie_count": 8
+    },
+    {
+      "profile_id": "H03",
+      "age": 40,
+      "E": 20,
+      "P": 6,
+      "R": 3,
+      "T": 6,
+      "G": 1,
+      "A": 1,
+      "type": "TP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "HC13",
+      "case_distance": "17/72",
+      "case_tie_count": 4
+    },
+    {
+      "profile_id": "H04",
+      "age": 52,
+      "E": 9,
+      "P": 6,
+      "R": 4,
+      "T": 3,
+      "G": 0,
+      "A": 1,
+      "type": "FP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "HC15",
+      "case_distance": "0/1",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "H05",
+      "age": 29,
+      "E": 16,
+      "P": 5,
+      "R": 3,
+      "T": 3.5,
+      "G": 0,
+      "A": 1,
+      "type": "FP",
+      "fi": {
+        "E": "7/24",
+        "P": "7/24",
+        "R": "7/24",
+        "T": "0/1"
+      },
+      "case_id": "HC09",
+      "case_distance": "17/72",
+      "case_tie_count": 8
+    },
+    {
+      "profile_id": "H06",
+      "age": 36,
+      "E": 2,
+      "P": 6,
+      "R": 4,
+      "T": 4,
+      "G": 1,
+      "A": 0,
+      "type": "FN",
+      "fi": {
+        "E": "-7/24",
+        "P": "1/12",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "HC07",
+      "case_distance": "1/72",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "H07",
+      "age": 46,
+      "E": 5,
+      "P": 6,
+      "R": 3,
+      "T": 5,
+      "G": 1,
+      "A": 0,
+      "type": "FN",
+      "fi": {
+        "E": "-7/24",
+        "P": "1/12",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "HC05",
+      "case_distance": "1/9",
+      "case_tie_count": 4
+    },
+    {
+      "profile_id": "H08",
+      "age": 28,
+      "E": 1,
+      "P": 5,
+      "R": 4,
+      "T": 4,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "-7/24",
+        "P": "1/12",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "HC03",
+      "case_distance": "1/12",
+      "case_tie_count": 4
+    },
+    {
+      "profile_id": "H09",
+      "age": 53,
+      "E": 12,
+      "P": 3,
+      "R": 4,
+      "T": 5,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "1/12",
+        "P": "-7/24",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "HC11",
+      "case_distance": "7/72",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "H10",
+      "age": 34,
+      "E": 8,
+      "P": 6,
+      "R": 1,
+      "T": 6,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "1/12",
+        "P": "1/12",
+        "R": "-7/24",
+        "T": "0/1"
+      },
+      "case_id": "HC13",
+      "case_distance": "7/72",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "H11",
+      "age": 42,
+      "E": 4,
+      "P": 4,
+      "R": 2,
+      "T": 3,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "-1/24",
+        "P": "-1/24",
+        "R": "-1/24",
+        "T": "0/1"
+      },
+      "case_id": "HC01",
+      "case_distance": "1/72",
+      "case_tie_count": 2
+    },
+    {
+      "profile_id": "H12",
+      "age": 39,
+      "E": 3,
+      "P": 6,
+      "R": 4,
+      "T": 3.5,
+      "G": 0,
+      "A": 0,
+      "type": "TN",
+      "fi": {
+        "E": "-7/24",
+        "P": "1/12",
+        "R": "1/12",
+        "T": "0/1"
+      },
+      "case_id": "HC07",
+      "case_distance": "0/1",
+      "case_tie_count": 2
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "HC01",
+      "E": 3,
+      "P": 4,
+      "R": 2,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "HC02",
+      "E": 3,
+      "P": 4,
+      "R": 2,
+      "T": 5,
+      "A": 0
+    },
+    {
+      "case_id": "HC03",
+      "E": 3,
+      "P": 4,
+      "R": 4,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "HC04",
+      "E": 3,
+      "P": 4,
+      "R": 4,
+      "T": 5,
+      "A": 0
+    },
+    {
+      "case_id": "HC05",
+      "E": 3,
+      "P": 6,
+      "R": 2,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "HC06",
+      "E": 3,
+      "P": 6,
+      "R": 2,
+      "T": 5,
+      "A": 0
+    },
+    {
+      "case_id": "HC07",
+      "E": 3,
+      "P": 6,
+      "R": 4,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "HC08",
+      "E": 3,
+      "P": 6,
+      "R": 4,
+      "T": 5,
+      "A": 0
+    },
+    {
+      "case_id": "HC09",
+      "E": 9,
+      "P": 4,
+      "R": 2,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "HC10",
+      "E": 9,
+      "P": 4,
+      "R": 2,
+      "T": 5,
+      "A": 0
+    },
+    {
+      "case_id": "HC11",
+      "E": 9,
+      "P": 4,
+      "R": 4,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "HC12",
+      "E": 9,
+      "P": 4,
+      "R": 4,
+      "T": 5,
+      "A": 0
+    },
+    {
+      "case_id": "HC13",
+      "E": 9,
+      "P": 6,
+      "R": 2,
+      "T": 3,
+      "A": 0
+    },
+    {
+      "case_id": "HC14",
+      "E": 9,
+      "P": 6,
+      "R": 2,
+      "T": 5,
+      "A": 0
+    },
+    {
+      "case_id": "HC15",
+      "E": 9,
+      "P": 6,
+      "R": 4,
+      "T": 3,
+      "A": 1
+    },
+    {
+      "case_id": "HC16",
+      "E": 9,
+      "P": 6,
+      "R": 4,
+      "T": 5,
+      "A": 1
+    }
+  ]
+}
