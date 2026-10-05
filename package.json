@@ -16,7 +16,8 @@
     "test:db": "vitest run --config vitest.db.config.ts",
     "check:bundle": "node scripts/check-bundle.mjs",
     "stimuli:generate": "python3 scripts/generate_stimuli.py",
-    "supabase": "supabase"
+    "supabase": "supabase",
+    "capture:irb": "node scripts/capture-irb.mjs"
   },
   "dependencies": {
     "next": "16.3.8",

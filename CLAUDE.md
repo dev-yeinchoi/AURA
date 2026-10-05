@@ -76,3 +76,13 @@ AURA(AI Authority, User Trust, and Reliance Assessment)는 대면 HCI 실험용 
 - docs/와 data/stimuli/는 내 요청 없이 수정하지 않는다. 자극물 변경은 `scripts/generate_stimuli.py` 수정 후 재생성으로만 한다.
 - 작업 후 typecheck, lint, 관련 테스트를 실행하고 결과를 보고한다.
 - 조건 분기·노출 통제·저장 로직을 바꿨다면 docs/06의 수용 기준 관련 테스트를 함께 실행한다.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
