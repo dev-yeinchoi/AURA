@@ -22,7 +22,7 @@ export function ScreenFrame({
   const planned = `${minutes}:${String(seconds).padStart(2, "0")}`;
 
   return (
-    <div className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-4 px-8 py-4">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-3 px-8 py-3">
       <header className="border-border flex items-baseline justify-between gap-4 border-b pb-2">
         <h1 className="text-lg font-semibold">{title}</h1>
         <p className="text-muted text-sm">
@@ -35,7 +35,7 @@ export function ScreenFrame({
 
       <footer className="border-border flex justify-end border-t pt-3">
         {/* 진행 버튼. 조건과 무관하게 같은 위치·같은 문구다. */}
-        <span className="border-foreground border px-4 py-2 text-sm font-medium">
+        <span className="bg-foreground rounded-control px-5 py-2 text-sm font-medium text-white">
           {action}
         </span>
       </footer>

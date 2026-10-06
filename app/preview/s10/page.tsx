@@ -97,13 +97,13 @@ export default async function PreviewS10({
           <ProfileCard profile={selected} labels={labels} showDescriptions />
 
           {/* 초기 판단: 읽기 전용. 덮어쓰지 않는다(CLAUDE.md 데이터 규칙). */}
-          <div className="border-border flex items-center justify-between gap-3 border border-dashed p-3">
+          <div className="bg-surface-sunken border-border rounded-control flex items-center justify-between gap-3 border px-4 py-3">
             <span className="text-muted text-sm">첫 번째 판단 (수정 불가)</span>
             <VerdictTag verdict={initialJudgmentExample} />
           </div>
 
           {/* 최종 판단: 기본 선택값 없음 (규칙 8) */}
-          <fieldset className="border-border flex flex-col gap-2 border p-3">
+          <fieldset className="bg-surface border-border rounded-card flex flex-col gap-2 border px-4 py-3">
             <legend className="px-1 text-sm font-semibold">최종 판단</legend>
             <p className="text-muted text-xs">
               선택된 항목이 없습니다. 직접 선택해 주세요.
@@ -112,7 +112,7 @@ export default async function PreviewS10({
               {[VERDICT_LABEL.eligible, VERDICT_LABEL.ineligible].map((label) => (
                 <span
                   key={label}
-                  className="border-border flex-1 border px-3 py-2 text-center text-sm"
+                  className="border-border-strong rounded-control flex-1 border px-3 py-2 text-center text-sm"
                 >
                   <span aria-hidden="true" className="text-muted mr-1.5">
                     ○
@@ -126,17 +126,20 @@ export default async function PreviewS10({
 
         {/* AI 패널: S9 와 같은 위치·크기. 모든 조건에 동일한 재열람 경로. */}
         <aside className="flex flex-col gap-4">
-          <div className="border-border flex items-center justify-between gap-2 border p-3">
+          <div className="bg-surface border-border-strong rounded-card flex items-center justify-between gap-2 border px-4 py-3">
             <span className="text-sm font-semibold">{SYSTEM_NAME} 판정</span>
             <VerdictTag verdict={selected.auraVerdict} />
           </div>
 
-          <Explanation
-            explanation={detail}
-            labels={labels}
-            fiNotice={FI_NOTICE}
-            caseNotice={CASE_NOTICE}
-          />
+          {/* 설명 영역은 고정 높이로 감싼다 — 조건 간 버튼 위치 불변(docs/01) */}
+          <div className="bg-surface border-border rounded-card flex h-[22.5rem] flex-col border px-4 py-3.5">
+            <Explanation
+              explanation={detail}
+              labels={labels}
+              fiNotice={FI_NOTICE}
+              caseNotice={CASE_NOTICE}
+            />
+          </div>
         </aside>
       </div>
     </ScreenFrame>

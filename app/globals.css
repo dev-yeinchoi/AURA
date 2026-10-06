@@ -4,33 +4,58 @@
  * 실험 인터페이스는 중립적·단순하게 유지한다(CLAUDE.md 디자인).
  * 참가자 간 화면이 달라지면 조건 통제가 깨지므로
  * prefers-color-scheme 기반 다크 모드는 두지 않는다. 단일 라이트 테마 고정.
+ *
+ * 색은 따뜻한 모노크롬 한 벌만 쓴다. 적격/부적격에 녹색·빨강 같은
+ * 가치 함축 색을 쓰지 않는다 — 판단에 편향을 줄 수 있고,
+ * 색상만으로 의미를 구별하지 않는다는 규칙에도 어긋난다.
  */
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --muted: #5c5c5c;
-  --border: #d4d4d4;
+  /* 캔버스는 웜 본, 카드 표면은 순백 — 그림자 없이 깊이를 만든다 */
+  --background: #fbfbfa;
+  --surface: #ffffff;
+  --surface-sunken: #f7f6f3;
+  /* 본문은 순흑이 아닌 차콜 */
+  --foreground: #111111;
+  --muted: #787774;
+  --border: #eaeaea;
+  --border-strong: #d4d2cd;
+
+  /* 모서리: 카드 12px, 컨트롤 6px. 과하게 둥글리지 않는다 */
+  --radius-card: 12px;
+  --radius-control: 6px;
+  --radius-tag: 4px;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --radius-card: var(--radius-card);
+  --radius-control: var(--radius-control);
+  --radius-tag: var(--radius-tag);
+
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
-    "Malgun Gothic", "Noto Sans KR", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo",
+    "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 키보드 초점 표시를 항상 보이게 한다(접근성 규칙). */
 :focus-visible {
   outline: 2px solid var(--foreground);
   outline-offset: 2px;
+  border-radius: var(--radius-control);
 }

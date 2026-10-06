@@ -11,7 +11,7 @@ export function CriteriaSummary({
   fullText: string;
 }) {
   return (
-    <section aria-label="선정 기준" className="border-border flex flex-col gap-2 border p-4">
+    <section aria-label="선정 기준" className="bg-surface border-border rounded-card flex flex-col gap-2 border px-4 py-3.5">
       <h2 className="text-sm font-semibold">선정 기준</h2>
       <ul className="text-muted flex list-disc flex-col gap-1 pl-4 text-xs leading-relaxed">
         {items.map((item) => (

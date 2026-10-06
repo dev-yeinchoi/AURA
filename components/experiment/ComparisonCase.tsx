@@ -25,7 +25,7 @@ export function ComparisonCase({
   };
 
   return (
-    <div className="border-border flex flex-col gap-2 border border-dashed p-2.5">
+    <div className="bg-surface-sunken border-border rounded-control flex flex-col gap-1.5 border p-2.5">
       <div className="flex items-baseline justify-between gap-3">
         <h4 className="text-sm font-semibold">비교 사례 {comparisonCase.caseId}</h4>
         <VerdictTag verdict={comparisonCase.verdict} label="AURA 판정" />

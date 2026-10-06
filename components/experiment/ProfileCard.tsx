@@ -32,7 +32,7 @@ export function ProfileCard({
   };
 
   return (
-    <article className="border-border flex flex-col gap-3 border p-4">
+    <article className="bg-surface border-border rounded-card flex flex-col gap-3 border px-4 py-3.5">
       <header className="flex items-baseline justify-between gap-3">
         <h3 className="text-base font-semibold">
           <span className="text-muted text-xs font-normal">
