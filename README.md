@@ -27,7 +27,7 @@ npm run dev
 | 기기 | PC·노트북 브라우저. Figma 기준 1440×900, 좁은 화면은 줄바꿈·스크롤 적용 |
 | 설문 | Figma 원문 수령 및 화면 구현. PPD15/상황 인식4/Trust3/사후 설문 |
 | 실험 흐름 | 두 라운드 전체 화면, 초기·최종 응답 분리, 제출 단계 잠금, 파일럿 서버 배정과 같은 브라우저 이어하기 |
-| 파일럿 운영 | 코드+PIN, 서면 동의 확인, 서버 조건 배정, 문항별 응답·직원별 판단·화면별/전체 시간·자유 응답 저장을 `/study`에 연결. 본실험 운영과 Vercel 배포는 별도 검증 전 |
+| 파일럿 운영 | [aura.yeinchoi.com](https://aura.yeinchoi.com) 배포 완료. 코드+PIN, 서면 동의 확인, 서버 조건 배정, 문항별 응답·직원별 판단·화면별/전체 시간·자유 응답 저장을 `/study`에 연결. 본실험 운영은 별도 검증 전 |
 | 연구 문서 | 첨부 설명문·서면 동의서는 로컬 개발 미리보기에만 연결. 공개 저장소·배포에는 포함하지 않음 |
 
 > `/preview`는 개발 환경에서만 열리고 입력은 연구 데이터가 아닙니다. `/study`는 **서면 동의를 대면으로 받은 파일럿 참가자**만 코드+PIN으로 사용합니다. 원본 PDF는 배포에 포함하지 않아 앱의 설명문·동의서 화면은 건너뛰며, 앱의 전체 시간은 파일럿 시작 버튼부터 종료까지입니다. 방문·설명·서명 시간까지 포함한 대면 전체 시간은 별도로 재야 합니다.
@@ -44,7 +44,7 @@ npm run dev
 
 ## 확인한 내용
 
-타입 검사·배포용 빌드, 실험 규칙 테스트 7개, 전체 흐름/6조건 브라우저 테스트 2개를 통과했습니다. PIN 인증과 파일럿 흐름을 임시 참가자로 브라우저→API→DB까지 검증했습니다. 파일럿 검증에서는 설문 원응답 39개, 직원 판단 48개, 화면 시간 19개, 전체 완료 시각과 자유 응답을 확인하고 임시 참가자 자료를 삭제했습니다. Chrome 1440×900·1366×768·1920×1080에서 가로 넘침을 확인했고, 배포용 `/preview`는 404로 생성됩니다.
+타입 검사·배포용 빌드, 실험 규칙 테스트 7개, 전체 흐름/6조건 브라우저 테스트 2개를 통과했습니다. PIN 인증과 파일럿 흐름을 임시 참가자로 브라우저→API→DB까지 로컬과 실제 배포에서 검증했습니다. 배포 검증에서는 설문 원응답 39개, 직원 판단 48개, 화면 시간 19개, 전체 완료 시각과 자유 응답을 확인하고 임시 참가자 자료를 삭제했습니다. Chrome 1440×900·1366×768·1920×1080에서 가로 넘침을 확인했고, 배포용 `/preview`는 404로 생성됩니다.
 
 ## 자료와 다음 연결 작업
 
@@ -269,15 +269,23 @@ RAIR·RSR·과신/과소의존은 `decisions`의 첫·최종 판단과 버전이
 
 첨부받은 PDF는 `data/private/documents/participant-information.pdf`와 `data/private/documents/written-consent.pdf`에 복사했습니다. 이 폴더는 Git에서 제외됩니다. 다른 컴퓨터에서 실행할 때는 해당 파일을 직접 복사해야 문서가 표시됩니다. PDF는 개발용 `/api/preview-document/information` 및 `/api/preview-document/consent`에서 `localhost`로 접속한 경우에만 제공됩니다. 설명문의 모집 인원 `000명`을 확정하고, 승인된 최종본을 받기 전에는 운영 화면에 게시하지 마세요.
 
-### Supabase·Vercel 연결 순서
+### Supabase·Vercel 연결 상태
 
-1. Supabase의 기존 `My Research (FREE)` 조직에 `aura-research` 프로젝트를 만들고 DB·PIN 마이그레이션을 적용했습니다. Free는 비활성 기간 후 일시 중지될 수 있으므로 본 실험 전 백업·운영 안정성에 맞춰 Pro 전환을 검토합니다. 로컬 `.env.local`에 Project URL·Publishable key·서버 전용 Secret key를 입력했습니다. 비밀키는 채팅·GitHub에 올리지 않습니다.
-2. Vercel에서 **Add New → Project → Import Git Repository**로 `dev-yeinchoi/AURA`를 가져옵니다. Framework Preset은 Next.js, Root Directory는 저장소 루트입니다. 현재 연결된 Vercel 계정에는 AURA 프로젝트가 아직 보이지 않습니다.
-3. Vercel의 **Project Settings → Environment Variables**에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`를 Production과 Preview에 등록합니다. 마지막 키는 서버 전용 비밀 값으로만 설정하고 Git·채팅에 올리지 않습니다. 로컬에서는 `.env.local`의 같은 키를 사용합니다. 배포 후 임시 파일럿으로 로그인→설문·판단→DB 저장을 다시 검증합니다.
-4. **이미 구입한 `yeinchoi.com`을 사용합니다.** `aura.yeinchoi.com`은 별도 구매가 필요한 새 도메인이 아니라 같은 도메인 아래의 서브도메인입니다. Vercel 프로젝트에 이 주소를 추가하고 안내되는 CNAME을 현재 DNS 관리 서비스에 설정합니다. 기존 `yeinchoi.com` 웹사이트와 이메일 레코드는 유지합니다. 실제 연구 개시 전까지는 Vercel Preview URL에서 검증합니다.
-5. 파일럿은 `/study`에서 서면 동의 확인·서버 조건 배정·문항별 응답과 화면별 시간 저장을 사용합니다. 본실험의 분석·제외 기준, 다른 브라우저 재접속, 운영용 내보내기는 별도로 검증합니다. 파일럿 자료는 `phase = pilot`로 본실험과 분리합니다.
+- Supabase `aura-research`에 DB·PIN 마이그레이션을 적용했습니다. 로컬 `.env.local`과 Vercel Production·Preview에 필요한 세 환경 변수를 등록했고, 서버 전용 키는 Git에 넣지 않았습니다.
+- GitHub `dev-yeinchoi/AURA`를 Vercel `aura-research` 프로젝트에 연결해 배포했습니다.
+- 기존 `yeinchoi.com`의 서브도메인 `aura.yeinchoi.com`을 Cloudflare의 `aura` CNAME과 소유권 확인 TXT로 연결했습니다. Vercel 도메인 검증은 통과했고 공개 HTTPS 응답은 `200`입니다. 새 DNS가 일부 통신사 캐시에 전파되기까지는 시간이 걸릴 수 있습니다.
+- 실제 배포에서 임시 파일럿 참가자의 로그인→두 라운드→설문·판단·시간·자유 응답 저장을 검증했습니다. 임시 데이터는 검증 뒤 삭제했습니다. 파일럿 자료는 `phase = pilot`로 본실험과 분리합니다.
+
+### 파일럿 당일 순서
+
+1. Supabase Table Editor의 `private.recruitment_applications`에 두 분의 모집 정보와 예약 시각을 연구자가 직접 입력합니다. 모집 정보는 앱 응답과 분리합니다.
+2. 대면 설명과 서면 동의를 마친 뒤 진행자 터미널에서 `npm run participant:issue -- pilot`로 참가자 코드·15분 유효 PIN을 발급합니다. 실제 서명을 확인하고 `npm run participant:confirm -- PT-001`처럼 해당 코드를 확인 처리합니다.
+3. 참가자는 [aura.yeinchoi.com](https://aura.yeinchoi.com)에서 코드와 PIN을 입력하고 실험을 시작합니다. 각 참가자의 PIN은 참여 직전에 발급합니다.
+4. 종료 후 진행자는 `npm run pilot:report`로 앱 전체 시간·화면별 시간·자유 응답을 확인합니다. 설문 문항별 원응답과 직원별 첫·최종 판단은 Supabase의 `survey_answers`와 `decisions`에 저장됩니다.
+
+본실험의 분석·제외 기준, 다른 브라우저 재접속, 운영용 내보내기는 별도로 검증합니다. Free 플랜은 비활성 기간 후 일시 중지될 수 있으므로 본실험 전 백업·운영 안정성을 다시 점검합니다.
 
 GitHub: https://github.com/dev-yeinchoi/AURA.git
 로컬: `/Users/yein/Developer/projects/aura`
 
-비밀 키·참가자 자료·로컬 PDF는 `.gitignore`로 제외합니다. Vercel 배포는 아직 진행하지 않았습니다.
+비밀 키·참가자 자료·로컬 PDF는 `.gitignore`로 제외합니다.

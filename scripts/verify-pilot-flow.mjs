@@ -25,10 +25,15 @@ let participantId;
 let browser;
 
 async function event(page, stage, round, previousStage, previousRound, answers, decisions) {
-  const response = await page.request.post(`${app}/api/pilot/event`, {
-    data: { stage, round, previousStage, previousRound, answers, decisions },
-  });
-  if (!response.ok()) throw new Error(`Pilot event ${previousStage ?? "start"} -> ${stage}: ${response.status()} ${await response.text()}`);
+  const response = await page.evaluate(async payload => {
+    const result = await fetch("/api/pilot/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return { ok: result.ok, status: result.status, body: await result.text() };
+  }, { stage, round, previousStage, previousRound, answers, decisions });
+  if (!response.ok) throw new Error(`Pilot event ${previousStage ?? "start"} -> ${stage}: ${response.status} ${response.body}`);
 }
 
 async function decisionsFor(roundNo, stage) {
@@ -51,7 +56,11 @@ try {
     .eq("id", participantId);
   if (consent.error) throw consent.error;
 
-  browser = await chromium.launch({ headless: true });
+  const testHostIp = process.env.AURA_TEST_HOST_IP;
+  browser = await chromium.launch({
+    headless: true,
+    args: testHostIp ? [`--host-resolver-rules=MAP ${new URL(app).hostname} ${testHostIp}`] : [],
+  });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   await page.goto(app);
   await page.locator("#participant-id").fill(code);
