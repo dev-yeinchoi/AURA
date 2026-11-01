@@ -222,7 +222,7 @@ README/AGENTS를 지속 관리한다. 요청된 노션 내보내기는 검토·�
 
 ## 앱 개발 상태 — 2026-11-01
 
-Next.js·TypeScript/Supabase/Vercel 확정. `/`는 참가자 확인 UI이며 실제 조회는 아직 연결하지 않았다. `/preview`는 development에서만 열리는 전체 흐름 점검용이다. 브라우저 저장은 개발 테스트용이며 서버 저장·본 실험 배정·인증을 대체하지 않는다. Figma 설문 원문은 `src/content/figma-source.json`, 수치는 `src/content/stimuli-v2.json`에 고정했다. 원문 오탈자도 임의 수정하지 않는다. 참가자 나이 항목은 현재 기본정보 화면에 없어 추가하지 않았다. 동의/설명문 PDF·채점·필수 여부·개인정보 운영 설정과 Supabase/Vercel 연결이 본 실험 전 필요하다. 현재 미리보기의 데이터는 연구 응답으로 사용하지 않는다.
+Next.js·TypeScript/Supabase/Vercel 확정. `/`는 참가자 확인 UI이며 실제 조회는 아직 연결하지 않았다. `/preview`는 development에서만 열리는 전체 흐름 점검용이다. 브라우저 저장은 개발 테스트용이며 서버 저장·본 실험 배정·인증을 대체하지 않는다. Figma 설문 원문은 `src/content/figma-source.json`, 수치는 `src/content/stimuli-v2.json`에 고정했다. 원문 오탈자도 임의 수정하지 않는다. 참가자 나이 항목은 현재 기본정보 화면에 없어 추가하지 않았다. 설명문·서면 동의서 PDF는 data/private/documents/에 로컬로만 보관하고 /preview에서만 표시한다. 공개 GitHub·Vercel 배포에는 포함하지 않는다. 서면 서명이 필요한 원본이므로 미리보기의 라디오 선택을 실제 동의로 취급하지 않는다. 설명문 모집 인원 000명 자리표시자와 최종 승인본 여부를 운영 전 확인한다. 채점·필수 여부·개인정보 운영 설정과 Supabase/Vercel 연결은 본 실험 전 필요하다. 현재 미리보기의 데이터는 연구 응답으로 사용하지 않는다.
 
 ## Codex 작업 기준
 

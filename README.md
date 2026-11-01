@@ -11,6 +11,8 @@ npm run dev
 
 - 참가자 시작 화면: http://localhost:3000
 - 개발용 전체 흐름: http://localhost:3000/preview
+- 주소창에는 **`localhost`**를 사용하세요. `192.168.x.x` 같은 네트워크 주소는 Next.js의 개발용 스크립트 보호 때문에 로딩 화면에서 멈출 수 있습니다. 3000번 포트가 사용 중이면 터미널의 `Local:` 뒤에 표시된 포트를 사용하세요.
+- 이전 미리보기 응답이 보이면 화면 아래 **처음부터** 버튼으로 새로 시작하세요.
 - `npm run typecheck`: 타입 검사
 - `npm run test`: 자극 계산·reliance·단계 잠금 검증
 - `npm run test:browser`: 실행 중인 로컬 서버와 Chrome에서 브라우저 검증
@@ -26,8 +28,9 @@ npm run dev
 | 설문 | Figma 원문 수령 및 화면 구현. PPD15/상황 인식4/Trust3/사후 설문 |
 | 실험 흐름 | 개발용 두 라운드 미리보기, 6조건 선택, 초기·최종 응답 분리, 제출 단계 잠금, 브라우저 이어하기 |
 | 실제 운영 | 참가자 조회·서버 배정·Supabase 저장·연구자 내보내기·Vercel 배포는 아직 연결 전 |
+| 연구 문서 | 첨부 설명문·서면 동의서는 로컬 개발 미리보기에만 연결. 공개 저장소·배포에는 포함하지 않음 |
 
-> `/preview`는 개발 환경에서만 열립니다. 입력은 해당 브라우저의 개발용 저장소에만 남으며 실제 연구 데이터로 사용할 수 없습니다. `/`에서 참가자 번호 확인은 아직 실제 조회를 수행하지 않습니다.
+> `/preview`는 개발 환경에서만 열립니다. 입력은 해당 브라우저의 개발용 저장소에만 남으며 실제 연구 데이터로 사용할 수 없습니다. `/`에서 참가자 번호 확인은 아직 실제 조회를 수행하지 않습니다. 미리보기의 동의 선택은 서면 동의서의 서명을 대신하지 않습니다.
 
 ## 최신 연구 결정
 
@@ -52,9 +55,20 @@ npm run dev
 | [수치 자료](src/content/stimuli-v2.json) | 직원/사례의 특성값·기여도·결과 및 표시 버전 |
 | [노션용 명세](exports/AURA_배정_판단_설명_명세_노션.md) | 이전 수치안 검토용 내보내기. 최신 표시 변경은 AGENTS 우선 |
 
-실제 운영 전 필요한 자료: 설명문·동의서 PDF, 설문 필수 여부/채점 기준, 개인정보 보관·접근 설정, Supabase 프로젝트 및 Vercel 연결입니다. 기본 정보 화면에는 나이 항목이 없어 임의로 추가하지 않았습니다. Figma의 문항 오탈자도 그대로 보존했습니다.
+실제 운영 전 필요한 결정: 설문 필수 여부/채점 기준, 개인정보 보관·접근 설정, Supabase 프로젝트 및 Vercel 연결입니다. 기본 정보 화면에는 나이 항목이 없어 임의로 추가하지 않았습니다. Figma의 문항 오탈자도 그대로 보존했습니다.
+
+### 로컬 연구 문서
+
+첨부받은 PDF는 `data/private/documents/participant-information.pdf`와 `data/private/documents/written-consent.pdf`에 복사했습니다. 이 폴더는 Git에서 제외됩니다. 다른 컴퓨터에서 실행할 때는 해당 파일을 직접 복사해야 문서가 표시됩니다. PDF는 개발용 `/api/preview-document/information` 및 `/api/preview-document/consent`에서 `localhost`로 접속한 경우에만 제공됩니다. 설명문의 모집 인원 `000명`을 확정하고, 승인된 최종본을 받기 전에는 운영 화면에 게시하지 마세요.
+
+### Supabase·Vercel 연결 순서
+
+1. Supabase에서 AURA용 프로젝트를 만듭니다. 프로젝트의 **Connect** 화면에서 Project URL과 Publishable key를 확인합니다. 비밀 키는 채팅이나 GitHub에 올리지 않습니다.
+2. 이 저장소의 `.env.local`에 `NEXT_PUBLIC_SUPABASE_URL`과 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`를 넣습니다. 현재 앱은 아직 DB 연동 코드가 없으므로, 이 값만 넣어도 참가자 응답이 저장되지는 않습니다.
+3. Vercel에서 **Add New → Project → Import Git Repository**로 `dev-yeinchoi/AURA`를 선택합니다. Framework Preset은 Next.js, Root Directory는 저장소 루트로 둡니다. 배포 환경 변수에도 같은 URL과 Publishable key를 설정합니다. 이후 GitHub push가 배포를 갱신합니다.
+4. 실제 연구 데이터 수집 전에는 서버 배정·저장·접근 통제·내보내기를 구현하고 별도로 검증해야 합니다. Supabase 응답 테이블을 공개 읽기/쓰기로 설정하지 마세요.
 
 GitHub: https://github.com/dev-yeinchoi/AURA.git
 로컬: `/Users/yein/Developer/projects/aura`
 
-현재 작업은 로컬에 있으며 GitHub push와 배포는 진행하지 않았습니다. 비밀 키와 참가자 자료는 `.gitignore`로 제외합니다.
+비밀 키·참가자 자료·로컬 PDF는 `.gitignore`로 제외합니다. Vercel 배포는 아직 진행하지 않았습니다.
