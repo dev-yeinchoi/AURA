@@ -1,0 +1,1151 @@
+{
+  "forms": {
+    "A": [
+      {
+        "id": "A01",
+        "v": [
+          6,
+          3,
+          4,
+          5
+        ],
+        "fi": [
+          0,
+          2,
+          3,
+          0
+        ],
+        "margin": 5,
+        "y": true,
+        "ai": true,
+        "type": "TP",
+        "case": "C01",
+        "distance_numerator": 1,
+        "case_copy_match": true
+      },
+      {
+        "id": "A02",
+        "v": [
+          6,
+          2,
+          3,
+          4
+        ],
+        "fi": [
+          0,
+          0,
+          0,
+          -5
+        ],
+        "margin": -5,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C25",
+        "distance_numerator": 3,
+        "case_copy_match": true
+      },
+      {
+        "id": "A03",
+        "v": [
+          9,
+          4,
+          3,
+          5
+        ],
+        "fi": [
+          6,
+          4,
+          0,
+          0
+        ],
+        "margin": 10,
+        "y": true,
+        "ai": true,
+        "type": "TP",
+        "case": "C17",
+        "distance_numerator": 4,
+        "case_copy_match": true
+      },
+      {
+        "id": "A04",
+        "v": [
+          1,
+          2,
+          3,
+          5
+        ],
+        "fi": [
+          -10,
+          0,
+          0,
+          0
+        ],
+        "margin": -10,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C09",
+        "distance_numerator": 5,
+        "case_copy_match": false
+      },
+      {
+        "id": "A05",
+        "v": [
+          1,
+          2,
+          3,
+          6
+        ],
+        "fi": [
+          -10,
+          0,
+          0,
+          5
+        ],
+        "margin": -5,
+        "y": true,
+        "ai": false,
+        "type": "FN",
+        "case": "C09",
+        "distance_numerator": 3,
+        "case_copy_match": true
+      },
+      {
+        "id": "A06",
+        "v": [
+          12,
+          1,
+          4,
+          6
+        ],
+        "fi": [
+          12,
+          -2,
+          3,
+          5
+        ],
+        "margin": 18,
+        "y": false,
+        "ai": true,
+        "type": "FP",
+        "case": "C15",
+        "distance_numerator": 6,
+        "case_copy_match": false
+      },
+      {
+        "id": "A07",
+        "v": [
+          1,
+          1,
+          2,
+          3
+        ],
+        "fi": [
+          -10,
+          -2,
+          -3,
+          -10
+        ],
+        "margin": -25,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C14",
+        "distance_numerator": 4,
+        "case_copy_match": true
+      },
+      {
+        "id": "A08",
+        "v": [
+          12,
+          4,
+          4,
+          6
+        ],
+        "fi": [
+          12,
+          4,
+          3,
+          5
+        ],
+        "margin": 24,
+        "y": true,
+        "ai": true,
+        "type": "TP",
+        "case": "C27",
+        "distance_numerator": 4,
+        "case_copy_match": true
+      },
+      {
+        "id": "A09",
+        "v": [
+          5,
+          2,
+          3,
+          5
+        ],
+        "fi": [
+          -2,
+          0,
+          0,
+          0
+        ],
+        "margin": -2,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C09",
+        "distance_numerator": 3,
+        "case_copy_match": false
+      },
+      {
+        "id": "A10",
+        "v": [
+          4,
+          1,
+          3,
+          4
+        ],
+        "fi": [
+          -4,
+          -2,
+          0,
+          -5
+        ],
+        "margin": -11,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C16",
+        "distance_numerator": 3,
+        "case_copy_match": true
+      },
+      {
+        "id": "A11",
+        "v": [
+          2,
+          2,
+          3,
+          6
+        ],
+        "fi": [
+          -8,
+          0,
+          0,
+          5
+        ],
+        "margin": -3,
+        "y": true,
+        "ai": false,
+        "type": "FN",
+        "case": "C09",
+        "distance_numerator": 2,
+        "case_copy_match": true
+      },
+      {
+        "id": "A12",
+        "v": [
+          9,
+          4,
+          2,
+          6
+        ],
+        "fi": [
+          6,
+          4,
+          -3,
+          5
+        ],
+        "margin": 12,
+        "y": false,
+        "ai": true,
+        "type": "FP",
+        "case": "C21",
+        "distance_numerator": 8,
+        "case_copy_match": false
+      }
+    ],
+    "B": [
+      {
+        "id": "B01",
+        "v": [
+          4,
+          2,
+          3,
+          5
+        ],
+        "fi": [
+          -4,
+          0,
+          0,
+          0
+        ],
+        "margin": -4,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C09",
+        "distance_numerator": 2,
+        "case_copy_match": false
+      },
+      {
+        "id": "B02",
+        "v": [
+          1,
+          3,
+          3,
+          6
+        ],
+        "fi": [
+          -10,
+          2,
+          0,
+          5
+        ],
+        "margin": -3,
+        "y": true,
+        "ai": false,
+        "type": "FN",
+        "case": "C07",
+        "distance_numerator": 3,
+        "case_copy_match": true
+      },
+      {
+        "id": "B03",
+        "v": [
+          3,
+          1,
+          4,
+          4
+        ],
+        "fi": [
+          -6,
+          -2,
+          3,
+          -5
+        ],
+        "margin": -10,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C16",
+        "distance_numerator": 5,
+        "case_copy_match": true
+      },
+      {
+        "id": "B04",
+        "v": [
+          8,
+          2,
+          4,
+          5
+        ],
+        "fi": [
+          4,
+          0,
+          3,
+          0
+        ],
+        "margin": 7,
+        "y": true,
+        "ai": true,
+        "type": "TP",
+        "case": "C06",
+        "distance_numerator": 2,
+        "case_copy_match": true
+      },
+      {
+        "id": "B05",
+        "v": [
+          10,
+          1,
+          3,
+          6
+        ],
+        "fi": [
+          8,
+          -2,
+          0,
+          5
+        ],
+        "margin": 11,
+        "y": false,
+        "ai": true,
+        "type": "FP",
+        "case": "C12",
+        "distance_numerator": 3,
+        "case_copy_match": false
+      },
+      {
+        "id": "B06",
+        "v": [
+          1,
+          1,
+          2,
+          4
+        ],
+        "fi": [
+          -10,
+          -2,
+          -3,
+          -5
+        ],
+        "margin": -20,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C14",
+        "distance_numerator": 2,
+        "case_copy_match": true
+      },
+      {
+        "id": "B07",
+        "v": [
+          7,
+          3,
+          3,
+          5
+        ],
+        "fi": [
+          2,
+          2,
+          0,
+          0
+        ],
+        "margin": 4,
+        "y": true,
+        "ai": true,
+        "type": "TP",
+        "case": "C01",
+        "distance_numerator": 3,
+        "case_copy_match": true
+      },
+      {
+        "id": "B08",
+        "v": [
+          8,
+          3,
+          2,
+          6
+        ],
+        "fi": [
+          4,
+          2,
+          -3,
+          5
+        ],
+        "margin": 8,
+        "y": false,
+        "ai": true,
+        "type": "FP",
+        "case": "C23",
+        "distance_numerator": 6,
+        "case_copy_match": true
+      },
+      {
+        "id": "B09",
+        "v": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "fi": [
+          -8,
+          2,
+          3,
+          0
+        ],
+        "margin": -3,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C18",
+        "distance_numerator": 2,
+        "case_copy_match": true
+      },
+      {
+        "id": "B10",
+        "v": [
+          10,
+          3,
+          4,
+          6
+        ],
+        "fi": [
+          8,
+          2,
+          3,
+          5
+        ],
+        "margin": 18,
+        "y": true,
+        "ai": true,
+        "type": "TP",
+        "case": "C27",
+        "distance_numerator": 1,
+        "case_copy_match": true
+      },
+      {
+        "id": "B11",
+        "v": [
+          7,
+          2,
+          3,
+          4
+        ],
+        "fi": [
+          2,
+          0,
+          0,
+          -5
+        ],
+        "margin": -3,
+        "y": false,
+        "ai": false,
+        "type": "TN",
+        "case": "C25",
+        "distance_numerator": 2,
+        "case_copy_match": true
+      },
+      {
+        "id": "B12",
+        "v": [
+          1,
+          2,
+          4,
+          6
+        ],
+        "fi": [
+          -10,
+          0,
+          3,
+          5
+        ],
+        "margin": -2,
+        "y": true,
+        "ai": false,
+        "type": "FN",
+        "case": "C32",
+        "distance_numerator": 4,
+        "case_copy_match": true
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "C01",
+      "v": [
+        7,
+        3,
+        4,
+        5
+      ],
+      "fi": [
+        2,
+        2,
+        3,
+        0
+      ],
+      "margin": 7,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C02",
+      "v": [
+        2,
+        4,
+        4,
+        6
+      ],
+      "fi": [
+        -8,
+        4,
+        3,
+        5
+      ],
+      "margin": 4,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C03",
+      "v": [
+        12,
+        2,
+        2,
+        5
+      ],
+      "fi": [
+        12,
+        0,
+        -3,
+        0
+      ],
+      "margin": 9,
+      "y": false,
+      "ai": true,
+      "historicalDecision": false
+    },
+    {
+      "id": "C04",
+      "v": [
+        3,
+        2,
+        3,
+        3
+      ],
+      "fi": [
+        -6,
+        0,
+        0,
+        -10
+      ],
+      "margin": -16,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C05",
+      "v": [
+        3,
+        3,
+        4,
+        6
+      ],
+      "fi": [
+        -6,
+        2,
+        3,
+        5
+      ],
+      "margin": 4,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C06",
+      "v": [
+        8,
+        2,
+        4,
+        6
+      ],
+      "fi": [
+        4,
+        0,
+        3,
+        5
+      ],
+      "margin": 12,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C07",
+      "v": [
+        4,
+        3,
+        3,
+        6
+      ],
+      "fi": [
+        -4,
+        2,
+        0,
+        5
+      ],
+      "margin": 3,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C08",
+      "v": [
+        9,
+        2,
+        2,
+        3
+      ],
+      "fi": [
+        6,
+        0,
+        -3,
+        -10
+      ],
+      "margin": -7,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C09",
+      "v": [
+        4,
+        2,
+        3,
+        6
+      ],
+      "fi": [
+        -4,
+        0,
+        0,
+        5
+      ],
+      "margin": 1,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C10",
+      "v": [
+        12,
+        2,
+        3,
+        3
+      ],
+      "fi": [
+        12,
+        0,
+        0,
+        -10
+      ],
+      "margin": 2,
+      "y": false,
+      "ai": true,
+      "historicalDecision": false
+    },
+    {
+      "id": "C11",
+      "v": [
+        12,
+        2,
+        4,
+        3
+      ],
+      "fi": [
+        12,
+        0,
+        3,
+        -10
+      ],
+      "margin": 5,
+      "y": false,
+      "ai": true,
+      "historicalDecision": false
+    },
+    {
+      "id": "C12",
+      "v": [
+        10,
+        2,
+        3,
+        6
+      ],
+      "fi": [
+        8,
+        0,
+        0,
+        5
+      ],
+      "margin": 13,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C13",
+      "v": [
+        7,
+        2,
+        2,
+        4
+      ],
+      "fi": [
+        2,
+        0,
+        -3,
+        -5
+      ],
+      "margin": -6,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C14",
+      "v": [
+        1,
+        1,
+        2,
+        5
+      ],
+      "fi": [
+        -10,
+        -2,
+        -3,
+        0
+      ],
+      "margin": -15,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C15",
+      "v": [
+        11,
+        2,
+        4,
+        5
+      ],
+      "fi": [
+        10,
+        0,
+        3,
+        0
+      ],
+      "margin": 13,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C16",
+      "v": [
+        1,
+        1,
+        3,
+        4
+      ],
+      "fi": [
+        -10,
+        -2,
+        0,
+        -5
+      ],
+      "margin": -17,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C17",
+      "v": [
+        8,
+        4,
+        4,
+        5
+      ],
+      "fi": [
+        4,
+        4,
+        3,
+        0
+      ],
+      "margin": 11,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C18",
+      "v": [
+        2,
+        3,
+        4,
+        4
+      ],
+      "fi": [
+        -8,
+        2,
+        3,
+        -5
+      ],
+      "margin": -8,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C19",
+      "v": [
+        5,
+        2,
+        4,
+        5
+      ],
+      "fi": [
+        -2,
+        0,
+        3,
+        0
+      ],
+      "margin": 1,
+      "y": false,
+      "ai": true,
+      "historicalDecision": false
+    },
+    {
+      "id": "C20",
+      "v": [
+        1,
+        2,
+        2,
+        6
+      ],
+      "fi": [
+        -10,
+        0,
+        -3,
+        5
+      ],
+      "margin": -8,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C21",
+      "v": [
+        4,
+        4,
+        3,
+        6
+      ],
+      "fi": [
+        -4,
+        4,
+        0,
+        5
+      ],
+      "margin": 5,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C22",
+      "v": [
+        2,
+        2,
+        2,
+        4
+      ],
+      "fi": [
+        -8,
+        0,
+        -3,
+        -5
+      ],
+      "margin": -16,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C23",
+      "v": [
+        7,
+        2,
+        2,
+        5
+      ],
+      "fi": [
+        2,
+        0,
+        -3,
+        0
+      ],
+      "margin": -1,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C24",
+      "v": [
+        12,
+        2,
+        3,
+        6
+      ],
+      "fi": [
+        12,
+        0,
+        0,
+        5
+      ],
+      "margin": 17,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C25",
+      "v": [
+        7,
+        2,
+        3,
+        3
+      ],
+      "fi": [
+        2,
+        0,
+        0,
+        -10
+      ],
+      "margin": -8,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C26",
+      "v": [
+        6,
+        2,
+        4,
+        5
+      ],
+      "fi": [
+        0,
+        0,
+        3,
+        0
+      ],
+      "margin": 3,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C27",
+      "v": [
+        11,
+        3,
+        4,
+        6
+      ],
+      "fi": [
+        10,
+        2,
+        3,
+        5
+      ],
+      "margin": 20,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C28",
+      "v": [
+        2,
+        4,
+        3,
+        6
+      ],
+      "fi": [
+        -8,
+        4,
+        0,
+        5
+      ],
+      "margin": 1,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C29",
+      "v": [
+        5,
+        4,
+        3,
+        5
+      ],
+      "fi": [
+        -2,
+        4,
+        0,
+        0
+      ],
+      "margin": 2,
+      "y": false,
+      "ai": true,
+      "historicalDecision": false
+    },
+    {
+      "id": "C30",
+      "v": [
+        6,
+        4,
+        4,
+        5
+      ],
+      "fi": [
+        0,
+        4,
+        3,
+        0
+      ],
+      "margin": 7,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    },
+    {
+      "id": "C31",
+      "v": [
+        2,
+        1,
+        3,
+        6
+      ],
+      "fi": [
+        -8,
+        -2,
+        0,
+        5
+      ],
+      "margin": -5,
+      "y": false,
+      "ai": false,
+      "historicalDecision": false
+    },
+    {
+      "id": "C32",
+      "v": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "fi": [
+        -8,
+        2,
+        3,
+        5
+      ],
+      "margin": 2,
+      "y": true,
+      "ai": true,
+      "historicalDecision": true
+    }
+  ],
+  "seed": 20261101,
+  "version": "2026-11-01-draft-2",
+  "case_sampling": "E=1..12; 16 rule-eligible +16 rule-ineligible; seed 20261101",
+  "case_display_version": "v3-historical-decision",
+  "historical_decision_provenance": "검토용 가상 담당자 결정. 초안에서는 각 사례의 규칙 충족 여부와 일치하도록 설정. 관측된 인간 응답이 아님."
+}
