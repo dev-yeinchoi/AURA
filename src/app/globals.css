@@ -43,3 +43,25 @@ html,body{height:100%;overflow:hidden}
 .free-text-label{display:block;font-size:20px;font-weight:500;line-height:28px}
 @media(max-width:900px){.workspace{padding-top:28px;padding-bottom:16px}.screen-heading{min-height:130px}.decision-layout{display:block}.criteria{margin-bottom:16px}.grid-panel{min-height:0}.demographic-options{gap:10px}.demographic-options label{font-size:14px;padding:8px}}
 @media(max-width:760px){.demographic-options{grid-template-columns:repeat(2,minmax(0,1fr))!important}.scenario p:not(.muted){font-size:22px}}
+
+/* Timed stages keep the elapsed duration in the event log; the display counts down. */
+.loading-content{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;text-align:center}
+.loading-content .spinner{width:72px;height:72px;border-width:6px;margin:0}
+.loading-content p{font-size:24px;line-height:34px;font-weight:700}
+.aura-intro-top{gap:16px}
+.aura-intro-top>div:nth-child(2){width:276px;flex-shrink:0}
+.aura-intro-top>div:last-child{margin-left:0;max-width:none;flex:1;min-width:0}
+.aura-intro-top>div:last-child h3{font-size:17px;line-height:27px}
+.aura-intro-top>.icon{width:24px;height:24px;padding:16px}
+.aura-intro-top .authority-badge{width:250px;min-height:26px;font-size:16px;line-height:26px}
+.case-result b{min-width:78px;min-height:24px;text-align:center;font-size:15px;line-height:24px;font-weight:700}
+.case-result b.held{background:#e8edf3;color:#334155}
+.recap b{font-size:18px;line-height:26px;padding:4px 12px}
+.workspace[data-stage="post"] .question{margin-bottom:18px;padding-bottom:18px}
+.workspace[data-stage="post"] .question legend{margin-bottom:10px}
+.workspace[data-stage="post"] .vertical-labels label{min-height:78px;gap:8px;padding:8px 4px 4px}
+.workspace[data-stage="post"] .post-section{margin-bottom:26px}
+.workspace[data-stage="post"] .post-section h2,.workspace[data-stage="post"] .accuracy h2,.workspace[data-stage="post"] .free-text-section h2{font-size:20px;line-height:28px;font-weight:700;margin-bottom:18px}
+.workspace[data-stage="post"] .accuracy label,.workspace[data-stage="post"] .free-text-label{display:block;font-size:16px;line-height:26px;font-weight:700;margin-bottom:12px}
+.workspace[data-stage="post"] .accuracy{margin-bottom:26px}
+@media(max-width:900px){.aura-intro-top>div:nth-child(2){width:220px}.aura-intro-top .authority-badge{width:210px;font-size:14px}.recap b{font-size:16px}}
