@@ -1,0 +1,492 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.18"
+  }
+  private: {
+    Tables: {
+      recruitment_applications: {
+        Row: {
+          birth_date: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          participant_id: string | null
+          phone: string | null
+          reserved_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          birth_date?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          participant_id?: string | null
+          phone?: string | null
+          reserved_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          participant_id?: string | null
+          phone?: string | null
+          reserved_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      assignments: {
+        Row: {
+          assigned_at: string
+          authority_cue: string
+          explanation_type: string
+          participant_id: string
+          sequence_code: string
+          stimulus_version: string
+        }
+        Insert: {
+          assigned_at?: string
+          authority_cue: string
+          explanation_type: string
+          participant_id: string
+          sequence_code: string
+          stimulus_version: string
+        }
+        Update: {
+          assigned_at?: string
+          authority_cue?: string
+          explanation_type?: string
+          participant_id?: string
+          sequence_code?: string
+          stimulus_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: true
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_stimulus_version_fkey"
+            columns: ["stimulus_version"]
+            isOneToOne: false
+            referencedRelation: "stimulus_sets"
+            referencedColumns: ["version"]
+          },
+        ]
+      }
+      decisions: {
+        Row: {
+          choice: number
+          employee_id: string
+          participant_id: string
+          round_no: number
+          selected_at: string
+          stage: string
+          submitted_at: string | null
+        }
+        Insert: {
+          choice: number
+          employee_id: string
+          participant_id: string
+          round_no: number
+          selected_at: string
+          stage: string
+          submitted_at?: string | null
+        }
+        Update: {
+          choice?: number
+          employee_id?: string
+          participant_id?: string
+          round_no?: number
+          selected_at?: string
+          stage?: string
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decisions_participant_id_round_no_fkey"
+            columns: ["participant_id", "round_no"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["participant_id", "round_no"]
+          },
+        ]
+      }
+      page_visits: {
+        Row: {
+          active_ms: number
+          entered_at: string
+          exit_reason: string | null
+          id: string
+          last_seen_at: string
+          left_at: string | null
+          page_key: string
+          participant_id: string
+          round_no: number | null
+          wall_ms: number | null
+        }
+        Insert: {
+          active_ms?: number
+          entered_at?: string
+          exit_reason?: string | null
+          id?: string
+          last_seen_at?: string
+          left_at?: string | null
+          page_key: string
+          participant_id: string
+          round_no?: number | null
+          wall_ms?: number | null
+        }
+        Update: {
+          active_ms?: number
+          entered_at?: string
+          exit_reason?: string | null
+          id?: string
+          last_seen_at?: string
+          left_at?: string | null
+          page_key?: string
+          participant_id?: string
+          round_no?: number | null
+          wall_ms?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_visits_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "page_visits_participant_id_round_no_fkey"
+            columns: ["participant_id", "round_no"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["participant_id", "round_no"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          completed_at: string | null
+          consent_document_version: string | null
+          created_at: string
+          id: string
+          paper_consent_confirmed_at: string | null
+          participant_code: string
+          phase: string
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          consent_document_version?: string | null
+          created_at?: string
+          id?: string
+          paper_consent_confirmed_at?: string | null
+          participant_code: string
+          phase: string
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          consent_document_version?: string | null
+          created_at?: string
+          id?: string
+          paper_consent_confirmed_at?: string | null
+          participant_code?: string
+          phase?: string
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      rounds: {
+        Row: {
+          completed_at: string | null
+          form_code: string
+          participant_id: string
+          risk_level: string
+          round_no: number
+          started_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          form_code: string
+          participant_id: string
+          risk_level: string
+          round_no: number
+          started_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          form_code?: string
+          participant_id?: string
+          risk_level?: string
+          round_no?: number
+          started_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rounds_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stimulus_sets: {
+        Row: {
+          created_at: string
+          payload: Json
+          sha256: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          payload: Json
+          sha256: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          payload?: Json
+          sha256?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      survey_answers: {
+        Row: {
+          answer_number: number | null
+          answer_text: string | null
+          figma_node_id: string | null
+          id: string
+          instrument: string
+          participant_id: string
+          question_key: string
+          round_no: number | null
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          answer_number?: number | null
+          answer_text?: string | null
+          figma_node_id?: string | null
+          id?: string
+          instrument: string
+          participant_id: string
+          question_key: string
+          round_no?: number | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          answer_number?: number | null
+          answer_text?: string | null
+          figma_node_id?: string | null
+          id?: string
+          instrument?: string
+          participant_id?: string
+          question_key?: string
+          round_no?: number | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_answers_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_answers_participant_id_round_no_fkey"
+            columns: ["participant_id", "round_no"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["participant_id", "round_no"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  private: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const

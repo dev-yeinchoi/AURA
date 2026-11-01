@@ -27,7 +27,7 @@ npm run dev
 | 기기 | PC·노트북 브라우저. Figma 기준 1440×900, 좁은 화면은 줄바꿈·스크롤 적용 |
 | 설문 | Figma 원문 수령 및 화면 구현. PPD15/상황 인식4/Trust3/사후 설문 |
 | 실험 흐름 | 개발용 두 라운드 미리보기, 6조건 선택, 초기·최종 응답 분리, 제출 단계 잠금, 브라우저 이어하기 |
-| 실제 운영 | 참가자 조회·서버 배정·Supabase 저장·연구자 내보내기·Vercel 배포는 아직 연결 전 |
+| 실제 운영 | Supabase 초기 DB 구조·서버 전용 클라이언트 준비 완료. 참가자 조회·서버 배정·응답 저장 API·연구자 내보내기·Vercel 배포는 아직 연결 전 |
 | 연구 문서 | 첨부 설명문·서면 동의서는 로컬 개발 미리보기에만 연결. 공개 저장소·배포에는 포함하지 않음 |
 
 > `/preview`는 개발 환경에서만 열립니다. 입력은 해당 브라우저의 개발용 저장소에만 남으며 실제 연구 데이터로 사용할 수 없습니다. `/`에서 참가자 번호 확인은 아직 실제 조회를 수행하지 않습니다. 미리보기의 동의 선택은 서면 동의서의 서명을 대신하지 않습니다.
@@ -71,7 +71,21 @@ npm run dev
 | Enable automatic RLS | 켬. 공개 스키마의 새 테이블에 자동 적용하고, 실제 정책·권한도 별도로 확인 |
 | Advanced Configuration | 지금은 기본값 유지 |
 
-> 프로젝트 생성만으로 앱과 DB가 연결되지는 않습니다. 실제 테이블·접근 정책을 만든 뒤 서버 전용 환경 변수와 API를 연결합니다. 모집 개인정보는 아래 별도 표의 접근 방식으로 관리합니다.
+> `aura-research` 프로젝트는 서울 리전에 생성됐고 초기 테이블·접근 제한을 2026-11-02에 적용했습니다. 아직 앱에서 DB 응답을 저장하지 않습니다. [서버 전용 클라이언트](src/lib/supabase-admin.ts)를 준비했으며 다음 단계는 서버 전용 키 입력과 API 연결입니다. 모집 개인정보는 아래 별도 표의 접근 방식으로 관리합니다.
+
+### DB 초기 구조 적용
+
+초기 테이블·제약·접근 제한은 [마이그레이션 SQL](supabase/migrations/20261102000000_initial_experiment_schema.sql)에 있습니다. 원격 DB에 적용한 뒤 타입을 생성해 8개 테이블을 확인했습니다. Publishable key로 `participants`·`survey_answers`를 조회하면 401, 비공개 모집 스키마를 조회하면 406을 반환합니다. **다른 프로젝트에 같은 구조를 재현할 때** 다음 순서로 적용합니다.
+
+```sh
+cd /Users/yein/Developer/projects/aura
+npx supabase login
+npx supabase link --project-ref <Project URL의 supabase.co 앞부분>
+npx supabase db push --dry-run
+npx supabase db push
+```
+
+`link` 과정에서 DB 비밀번호를 묻는다면 로컬 터미널에만 입력합니다. `db push --dry-run`은 적용할 마이그레이션 목록을 확인하는 단계이며 SQL 실행 검증은 실제 적용과 이후 스키마 조회로 확인해야 합니다. `supabase db reset --linked`는 원격 DB를 지우므로 사용하지 않습니다. `private.recruitment_applications`의 실제 모집 입력 화면·권한과 본 실험 참가자 API는 아직 구현 전입니다. 로컬 DB 검증은 Docker가 실행 중이지 않아 아직 하지 못했습니다.
 
 ### 실제 운영 데이터 설계 초안 (ERD)
 
@@ -228,11 +242,11 @@ RAIR·RSR·과신/과소의존은 `decisions`의 첫·최종 판단과 버전이
 
 ### Supabase·Vercel 연결 순서
 
-1. Supabase에서 조직이 없다면 **Name: `AURA Research` / Type: `Personal` / Plan: `Free`**로 조직을 만들고 그 안에 AURA 프로젝트를 만듭니다. 개인 명의 계정으로 개발하는 현재 단계의 권장값입니다. 학교가 소유·운영하는 조직이라면 Type과 소유 계정은 학교 기준으로 정합니다. Free는 비활성 기간 후 일시 중지될 수 있으므로 본 실험 전 백업·운영 안정성에 맞춰 Pro 전환을 검토합니다. 프로젝트 **Connect**에서 Project URL과 Publishable key를 확인합니다. 서버에서만 쓸 Secret key는 별도로 보관하며 채팅·GitHub에 올리지 않습니다.
+1. Supabase의 기존 `My Research (FREE)` 조직에 `aura-research` 프로젝트를 만들고 초기 마이그레이션을 적용했습니다. Free는 비활성 기간 후 일시 중지될 수 있으므로 본 실험 전 백업·운영 안정성에 맞춰 Pro 전환을 검토합니다. 로컬 `.env.local`에 Project URL과 Publishable key를 입력했습니다. 서버에서만 쓸 Secret key는 별도로 보관하며 채팅·GitHub에 올리지 않습니다.
 2. Vercel에서 **Add New → Project → Import Git Repository**로 `dev-yeinchoi/AURA`를 가져옵니다. Framework Preset은 Next.js, Root Directory는 저장소 루트입니다. 현재 연결된 Vercel 계정에는 AURA 프로젝트가 아직 보이지 않습니다.
 3. Vercel의 **Project Settings → Environment Variables**에 Supabase URL·Publishable key를 등록합니다. 서버 저장 API를 구현할 때만 Secret key를 서버 전용 변수로 등록합니다. 로컬에서는 `cp .env.example .env.local` 후 같은 키 이름에 값을 넣습니다. 비밀 값은 출력하거나 커밋하지 않습니다. **현재 앱에는 DB 연동 코드가 없어 키만 입력해도 응답은 저장되지 않습니다.**
 4. **이미 구입한 `yeinchoi.com`을 사용합니다.** `aura.yeinchoi.com`은 별도 구매가 필요한 새 도메인이 아니라 같은 도메인 아래의 서브도메인입니다. Vercel 프로젝트에 이 주소를 추가하고 안내되는 CNAME을 현재 DNS 관리 서비스에 설정합니다. 기존 `yeinchoi.com` 웹사이트와 이메일 레코드는 유지합니다. 실제 연구 개시 전까지는 Vercel Preview URL에서 검증합니다.
-5. 위 ERD에 맞춰 DB 테이블·접근 제한(RLS/권한)을 만든 다음, 참가자 코드 확인·균형 배정·중간 저장·재접속·연구자 내보내기를 구현하고 파일럿 데이터와 본 실험 데이터를 분리 검증합니다.
+5. 위 ERD의 초기 DB 테이블·접근 제한(RLS/권한)은 적용했습니다. 다음으로 참가자 코드 확인·균형 배정·중간 저장·재접속·연구자 내보내기를 구현하고 파일럿 데이터와 본 실험 데이터를 분리 검증합니다.
 
 GitHub: https://github.com/dev-yeinchoi/AURA.git
 로컬: `/Users/yein/Developer/projects/aura`
