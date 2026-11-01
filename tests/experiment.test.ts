@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import data from "../src/content/stimuli-v2.json";
 import {truth,recommendation,contributions,reliance,sequences,type Features} from "../src/lib/experiment";
-import {createPreview,saveDecision,advance} from "../src/lib/preview-state";
+import {createPreview,normalizePreviewOrder,saveDecision,advance} from "../src/lib/preview-state";
 import {ppd,riskQuestions,trust as trustQuestions,checks,usability,scenario} from "../src/content/surveys";
 
 test("두 폼의 실험 구성은 TP3 FP2 TN5 FN2",()=>{
@@ -27,12 +27,21 @@ test("RAIR/RSR의 분모는 조건부이며 기회 없음은 null",()=>{
 });
 test("초기 응답이 모두 있어야 AI로 이동하며 이후 초기 응답이 변경되지 않음",()=>{
  let s=createPreview("high","case",0,[data.forms.A.map(e=>e.id),data.forms.B.map(e=>e.id)]);s.stage="initial";
+ assert.deepEqual(s.order[0],data.forms.A.map(e=>e.id).sort());
  assert.throws(()=>advance(s));
  for(const id of s.order[0])s=saveDecision(s,id,0);
  const order=[...s.order[0]];s=advance(s);assert.equal(s.stage,"loading");assert.throws(()=>saveDecision(s,"A01",1));
- s=advance(s,s.enteredAt+10000);assert.equal(s.stage,"advice");s=advance(s);assert.equal(s.stage,"final");assert.deepEqual(s.order[0],order);
+ s=advance(s,s.enteredAt+10000);assert.equal(s.stage,"advice");assert.throws(()=>advance(s,s.enteredAt+29999));s=advance(s,s.enteredAt+30000);assert.equal(s.stage,"final");assert.deepEqual(s.order[0],order);
  assert.equal(s.decisions["0:final:A01"],undefined);
  s=saveDecision(s,"A01",1);assert.equal(s.decisions["0:initial:A01"],0);
+});
+test("기존 미리보기 순서를 정렬하면서 현재 직원은 유지",()=>{
+ const s=createPreview("low","none",0,[data.forms.A.map(e=>e.id),data.forms.B.map(e=>e.id)]);
+ s.order[0].reverse();s.index=2;
+ const current=s.order[0][s.index];
+ const normalized=normalizePreviewOrder(s);
+ assert.deepEqual(normalized.order[0],data.forms.A.map(e=>e.id).sort());
+ assert.equal(normalized.order[0][normalized.index],current);
 });
 test("피그마 원문 문항 수·척도 및 사용자 선택 High 원문 보존",()=>{
  assert.equal(ppd.length,15);assert.equal(riskQuestions.length,4);assert.equal(trustQuestions.length,3);assert.equal(checks.length,3);assert.equal(usability.length,2);

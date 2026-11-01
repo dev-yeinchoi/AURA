@@ -1,7 +1,13 @@
-import {shuffle,sequences,type Binary,type Authority,type Explanation} from "./experiment";
+import {sequences,type Binary,type Authority,type Explanation} from "./experiment";
 export const stages=["information","consent","demographics","ppd","scenario","risk","browse","initial","loading","advice","final","trust","post","done","declined"] as const;
 export type Stage=typeof stages[number];
 export type PreviewState={version:1; mode:"preview"; authority:Authority; explanation:Explanation; sequence:number; round:0|1; stage:Stage; enteredAt:number; order:string[][]; index:number; answers:Record<string,number|string>; decisions:Record<string,Binary>; events:{stage:Stage;round:number;enteredAt:number;submittedAt:number}[]};
+const sortIds=(ids:string[])=>[...ids].sort((a,b)=>a.localeCompare(b,"en",{numeric:true}));
+export function normalizePreviewOrder(state:PreviewState):PreviewState {
+  const currentId=state.order[state.round][state.index];
+  const order=state.order.map(sortIds);
+  return {...state,order,index:order[state.round].indexOf(currentId)};
+}
 export function isPreviewState(value:unknown):value is PreviewState {
   if(!value || typeof value!=="object")return false;
   const v=value as Record<string,unknown>;
@@ -12,7 +18,7 @@ export function isPreviewState(value:unknown):value is PreviewState {
   return !!v.decisions && typeof v.decisions==="object" && !Array.isArray(v.decisions) && Object.values(v.decisions).every(x=>x===0||x===1) && Array.isArray(v.events);
 }
 export function createPreview(authority:Authority,explanation:Explanation,sequence:number,orders:string[][]):PreviewState {
-  return {version:1,mode:"preview",authority,explanation,sequence,round:0,stage:"information",enteredAt:Date.now(),order:orders.map(o=>shuffle(o)),index:0,answers:{},decisions:{},events:[]};
+  return {version:1,mode:"preview",authority,explanation,sequence,round:0,stage:"information",enteredAt:Date.now(),order:orders.map(sortIds),index:0,answers:{},decisions:{},events:[]};
 }
 export function saveDecision(state:PreviewState,id:string,value:Binary):PreviewState {
   if(state.stage!=="initial" && state.stage!=="final")throw new Error("판단 단계가 아닙니다.");
@@ -23,6 +29,7 @@ export function advance(state:PreviewState,now=Date.now()):PreviewState {
   if(["initial","final"].includes(state.stage) && state.order[state.round].some(id=>state.decisions[`${state.round}:${state.stage}:${id}`]===undefined))throw new Error("12명의 판단이 필요합니다.");
   if(state.stage==="scenario" && now-state.enteredAt<30000)throw new Error("상황 설명을 읽어 주세요.");
   if(state.stage==="loading" && now-state.enteredAt<10000)throw new Error("AURA 확인 중입니다.");
+  if(state.stage==="advice" && now-state.enteredAt<30000)throw new Error("AI 추천 정보를 30초 동안 확인해 주세요.");
   if(state.stage==="done" || state.stage==="declined")return state;
   let next:Stage=stages[stages.indexOf(state.stage)+1];
   let round=state.round;

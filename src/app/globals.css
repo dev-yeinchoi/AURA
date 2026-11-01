@@ -7,3 +7,39 @@
 .preview-toolbar{top:16px;bottom:auto;left:auto;right:24px;border-radius:8px;max-width:calc(100% - 160px)}.options input[type=radio]{appearance:none;border:2px solid var(--line);border-radius:50%;background:white}.options input[type=radio]:checked{border-color:var(--blue);background:radial-gradient(circle,var(--blue) 0 5px,white 5.5px)}.case-result b{color:var(--blue);background:#ebf2ff;border-radius:6px;padding:0 12px}.case-result{border-bottom:1px solid #d5e0f3;padding-bottom:8px}
 
 .document-note{margin:12px 0 16px}.document-frame{display:block;width:100%;height:min(72vh,820px);min-height:420px;margin-bottom:12px;border:1px solid var(--line);border-radius:8px;background:white}.consent p{width:100%;color:var(--muted);font-size:14px}
+
+/* Keep navigation in view; only the active content panel scrolls. */
+html,body{height:100%;overflow:hidden}
+.workspace{height:calc(100dvh - 76px);margin:0 auto;padding:50px 0 24px;display:flex;flex-direction:column;overflow:hidden}
+.screen-heading,.navigation,.aura-intro,.legend-line,.consent{flex-shrink:0}
+.scroll-panel,.grid-panel,.browse-grid,.grid-panel:not(.browse-grid){height:auto;min-height:0;max-height:none;flex:1;overflow-y:auto;overscroll-behavior:contain}
+.decision-layout{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain}
+.criteria{min-height:0}
+.document{min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden}
+.document-frame{height:auto;min-height:0;flex:1}
+.navigation{min-height:74px;margin-top:12px}
+.complete{margin:auto 0}
+.workspace[data-stage="loading"] .complete{margin:auto 0}
+
+/* Survey options follow the layouts in Figma, with a shared hover cue. */
+.demographic-question legend{font-size:20px;line-height:28px;font-weight:500;margin-bottom:24px}
+.demographic-question{margin-bottom:30px;padding-bottom:34px}
+.demographic-options{gap:14px 22px}
+.demographic-options label{min-height:48px;padding:8px 12px;font-size:14px;line-height:20px;word-break:keep-all}
+.options label,.consent label,.choices button{transition:box-shadow .15s ease,background-color .15s ease,border-color .15s ease}
+.options label:hover,.options label:focus-within,.consent label:hover,.consent label:focus-within,.choices button:hover:enabled,.choices button:focus-visible{box-shadow:0 0 0 2px #93b4ff}
+.choices button[aria-pressed="true"].assign-choice{background:#f5fdf5;border-color:#12b909;color:var(--text);font-weight:700}
+.choices button[aria-pressed="true"].hold-choice{background:#fef3f2;border-color:#ea5c52;color:var(--text);font-weight:700}
+.scenario p:not(.muted){font-size:24px;line-height:1.55;margin:22px 0}
+.scenario p.muted{font-size:14px}
+
+/* Final questionnaire: the thumb position itself is the answer. */
+.accuracy h2{margin-bottom:20px}
+.accuracy label{font-size:14px;line-height:20px;font-weight:400}
+.accuracy-slider{min-height:151px;padding:22px 24px 18px;background:var(--page);border:1px solid var(--line);border-radius:12px}
+.accuracy output{font-size:28px;line-height:38px;font-weight:700;margin-bottom:16px}
+.accuracy input[type=range]{width:100%;height:7px;margin:0;background:linear-gradient(to right,var(--blue) 0,var(--blue) var(--range-progress),var(--line) var(--range-progress),var(--line) 100%);border-radius:4px}
+.range-ticks{margin-top:16px;font-size:14px;font-weight:500;line-height:20px}
+.free-text-label{display:block;font-size:20px;font-weight:500;line-height:28px}
+@media(max-width:900px){.workspace{padding-top:28px;padding-bottom:16px}.screen-heading{min-height:130px}.decision-layout{display:block}.criteria{margin-bottom:16px}.grid-panel{min-height:0}.demographic-options{gap:10px}.demographic-options label{font-size:14px;padding:8px}}
+@media(max-width:760px){.demographic-options{grid-template-columns:repeat(2,minmax(0,1fr))!important}.scenario p:not(.muted){font-size:22px}}

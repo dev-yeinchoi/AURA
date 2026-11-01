@@ -8,23 +8,31 @@ test("설문, 두 라운드, 재접속, 잠금, 종료 흐름",async({page})=>{
  await capture(page,{path:"test-results/entry-1440.png",fullPage:true});
  await page.goto("/preview");await page.getByLabel("Authority").selectOption("high");await page.getByLabel("Explanation").selectOption("case");await page.getByRole("button",{name:"미리보기 시작"}).click();
  await page.getByRole("button",{name:"동의서 확인"}).click();await page.getByRole("radio",{name:"동의하고 참여"}).check();await page.getByRole("button",{name:"다음",exact:true}).click();
+ await expect(page.locator(".demographic-options")).toHaveCount(3);
+ expect(await page.locator(".demographic-options").nth(1).evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(" ").length)).toBe(3);
+ await page.locator(".survey-container").hover();await page.mouse.wheel(0,900);
+ await expect.poll(()=>page.locator(".survey-container").evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+ expect(await page.evaluate(()=>window.scrollY)).toBe(0);
  await answerSurvey(page);await page.getByRole("button",{name:"다음",exact:true}).click();await expect(page.locator("fieldset.question")).toHaveCount(15);await capture(page,{path:"test-results/ppd-1440.png"});await answerSurvey(page);await page.getByRole("button",{name:"다음",exact:true}).click();
  const order=(await saved(page)).order;
  for(let round=0;round<2;round++){
   await expect(page.getByRole("button",{name:/다음 \(/})).toBeDisabled();await page.clock.fastForward(31000);await page.getByRole("button",{name:"다음",exact:true}).click();
   await answerSurvey(page);await page.getByRole("button",{name:"다음",exact:true}).click();await expect(page.locator(".employee-card")).toHaveCount(12);await expect(page.locator(".recommendation")).toHaveCount(0);await page.getByRole("button",{name:"첫 판단 시작"}).click();
   await expect(page.locator(".authority-badge")).toHaveCount(0);await expect(page.locator('.choices [aria-pressed="true"]')).toHaveCount(0);await expect(page.getByRole("button",{name:"AI 의견 확인"})).toBeDisabled();
-  if(round===0){await capture(page,{path:"test-results/initial-1440.png"});await page.getByRole("button",{name:"배정하기",exact:true}).click();await page.reload();await expect(page.getByRole("button",{name:"배정하기",exact:true})).toHaveAttribute("aria-pressed","true");expect((await saved(page)).order).toEqual(order);}
+  if(round===0){await capture(page,{path:"test-results/initial-1440.png"});await page.getByRole("button",{name:"배정하기",exact:true}).click();await expect(page.getByRole("button",{name:"배정하기",exact:true})).toHaveCSS("background-color","rgb(245, 253, 245)");await page.reload();await expect(page.getByRole("button",{name:"배정하기",exact:true})).toHaveAttribute("aria-pressed","true");expect((await saved(page)).order).toEqual(order);}
   for(let i=0;i<12;i++){await page.getByRole("button",{name:i%2?"보류하기":"배정하기",exact:true}).click();if(i<11)await page.getByRole("button",{name:"다음 프로필 >"}).click();}
-  const initial={...(await saved(page)).decisions};await page.getByRole("button",{name:"AI 의견 확인"}).click();await page.clock.fastForward(11000);await page.getByRole("button",{name:"다음",exact:true}).click();
+  const initial={...(await saved(page)).decisions};await page.getByRole("button",{name:"AI 의견 확인"}).click();await expect(page.getByText("직원 정보를 확인하고 있습니다.")).toBeVisible();await expect(page.locator(".navigation")).toHaveCount(0);await page.clock.fastForward(11000);
   await expect(page.locator(".recommendation")).toHaveCount(12);await expect(page.locator(".case-card")).toHaveCount(12);await expect(page.getByText("당시 담당자의 최종 결정",{exact:true})).toHaveCount(12);await expect(page.getByText("당시 규칙상 선발 결과",{exact:true})).toHaveCount(0);
+  const visibleOrder=await page.locator(".employee-card header h3").allTextContents();const recommended=await page.locator(".employee-card").evaluateAll(cards=>cards.map(card=>card.querySelector(".recommendation")?.textContent?.includes("배정 추천")));
+  expect(recommended).toEqual([...recommended].sort((a,b)=>Number(b)-Number(a)));expect(visibleOrder.slice(0,5)).toEqual([...visibleOrder.slice(0,5)].sort());
+  await expect(page.getByRole("button",{name:"최종 판단 진행하기"})).toBeDisabled();await page.clock.fastForward(31000);
   if(round===0)await capture(page,{path:"test-results/case-1440.png"});
-  await page.getByRole("button",{name:"최종 판단 진행하기"}).click();await expect(page.locator('.choices [aria-pressed="true"]')).toHaveCount(0);if(round===0)await capture(page,{path:"test-results/final-1440.png"});
+  await page.getByRole("button",{name:"최종 판단 진행하기"}).click();await expect(page.locator('.choices [aria-pressed="true"]')).toHaveCount(0);await expect(page.locator(".screen-heading .authority-badge")).toHaveCount(0);if(round===0)await capture(page,{path:"test-results/final-1440.png"});
   for(let i=0;i<12;i++){await page.getByRole("button",{name:i%2?"배정하기":"보류하기",exact:true}).click();if(i<11)await page.getByRole("button",{name:"다음 프로필 >"}).click();}
   for(const [key,value] of Object.entries(initial))expect((await saved(page)).decisions[key]).toBe(value);
   await page.getByRole("button",{name:"최종 판단 제출"}).click();await answerSurvey(page);await page.getByRole("button",{name:"다음",exact:true}).click();
  }
- await answerSurvey(page);await expect(page.getByRole("button",{name:"제출",exact:true})).toBeDisabled();await page.getByRole("button",{name:"현재 값 선택"}).click();await page.getByRole("button",{name:"제출",exact:true}).click();await expect(page.getByRole("heading",{name:"연구 참여가 완료되었습니다."})).toBeVisible();expect((await saved(page)).stage).toBe("done");expect(Object.keys((await saved(page)).decisions)).toHaveLength(48);expect(errors).toEqual([]);
+ await answerSurvey(page);await expect(page.getByRole("heading",{name:"AI 시스템에 대한 체감 정확도"})).toBeVisible();await expect(page.locator("#accuracy")).toHaveAttribute("step","5");await page.locator(".accuracy").scrollIntoViewIfNeeded();await capture(page,{path:"test-results/post-accuracy-1440.png"});await expect(page.getByRole("button",{name:"제출",exact:true})).toBeEnabled();await page.getByRole("button",{name:"제출",exact:true}).click();await expect(page.getByRole("heading",{name:"연구 참여가 완료되었습니다."})).toBeVisible();expect((await saved(page)).stage).toBe("done");expect((await saved(page)).answers["1:post:accuracy"]).toBe(50);expect(Object.keys((await saved(page)).decisions)).toHaveLength(48);expect(errors).toEqual([]);
 });
 test("6개 설명/권위 조건 및 노트북 화면에서 가로 넘침 없음",async({page})=>{
  await page.goto("/preview");await page.getByRole("button",{name:"미리보기 시작"}).click();const initial=await saved(page);
