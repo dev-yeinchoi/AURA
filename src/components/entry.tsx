@@ -88,7 +88,7 @@ export default function Entry() {
       {verifiedCode && <button type="button" className="secondary" disabled={busy} onClick={signOut}>다른 참가자로 전환</button>}
       {message && <p role="status" className="muted">{message}</p>}
     </form>
-    <button className="start" disabled>시작하기</button>
+    <button className="start" disabled={!verifiedCode || busy} onClick={() => location.assign("/study")}>시작하기</button>
     {process.env.NODE_ENV === "development" && <a className="preview-link" href="/preview">개발용 미리보기 열기</a>}
   </main>;
 }

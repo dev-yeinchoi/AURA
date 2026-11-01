@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "test:browser": "playwright test",
-    "participant:issue": "node --env-file=.env.local scripts/issue-participant.mjs"
+    "participant:issue": "node --env-file=.env.local scripts/issue-participant.mjs",
+    "participant:confirm": "node --env-file=.env.local scripts/confirm-paper-consent.mjs",
+    "pilot:report": "node --env-file=.env.local scripts/pilot-report.mjs"
   },
   "dependencies": {
     "@fontsource/noto-sans-kr": "^5.3.1",
