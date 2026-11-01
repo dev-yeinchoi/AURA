@@ -283,6 +283,8 @@ RAIR·RSR·과신/과소의존은 `decisions`의 첫·최종 판단과 버전이
 3. 참가자는 [aura.yeinchoi.com](https://aura.yeinchoi.com)에서 코드와 PIN을 입력하고 실험을 시작합니다. 각 참가자의 PIN은 참여 직전에 발급합니다.
 4. 종료 후 진행자는 `npm run pilot:report`로 앱 전체 시간·화면별 시간·자유 응답을 확인합니다. 설문 문항별 원응답과 직원별 첫·최종 판단은 Supabase의 `survey_answers`와 `decisions`에 저장됩니다.
 
+`PT-000`은 배포 저장을 확인하기 위한 **합성 테스트 자료**입니다. 실제 참가자나 파일럿 분석에 포함하지 않습니다. `participants.consent_document_version`에 `SYNTHETIC_TEST_NO_HUMAN_PARTICIPANT`가 표시되고 서면 동의 확인 시각은 비어 있습니다. `pilot:report`에서도 `[합성 테스트]`로 구분합니다.
+
 본실험의 분석·제외 기준, 다른 브라우저 재접속, 운영용 내보내기는 별도로 검증합니다. Free 플랜은 비활성 기간 후 일시 중지될 수 있으므로 본실험 전 백업·운영 안정성을 다시 점검합니다.
 
 GitHub: https://github.com/dev-yeinchoi/AURA.git

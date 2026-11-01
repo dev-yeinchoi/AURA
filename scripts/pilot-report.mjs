@@ -7,7 +7,7 @@ const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SECRET_KEY,
   { auth: { persistSession: false, autoRefreshToken: false } });
 const { data: participants, error } = await db.from("participants")
-  .select("id, participant_code, status, started_at, completed_at")
+  .select("id, participant_code, status, consent_document_version, started_at, completed_at")
   .eq("phase", "pilot").order("participant_code");
 if (error) throw error;
 if (!participants.length) {
@@ -18,7 +18,9 @@ for (const participant of participants) {
   const total = participant.started_at && participant.completed_at
     ? Math.round((Date.parse(participant.completed_at) - Date.parse(participant.started_at)) / 1000)
     : null;
-  console.log(`\n${participant.participant_code} | ${participant.status} | 전체 ${total === null ? "진행 중" : `${total}초`}`);
+  const testLabel = participant.consent_document_version === "SYNTHETIC_TEST_NO_HUMAN_PARTICIPANT"
+    ? "[합성 테스트] " : "";
+  console.log(`\n${testLabel}${participant.participant_code} | ${participant.status} | 전체 ${total === null ? "진행 중" : `${total}초`}`);
   const { data: visits, error: visitError } = await db.from("page_visits")
     .select("round_no, page_key, wall_ms, entered_at")
     .eq("participant_id", participant.id).order("entered_at");

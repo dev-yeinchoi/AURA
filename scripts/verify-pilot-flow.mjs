@@ -10,7 +10,11 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const secret = process.env.SUPABASE_SECRET_KEY;
 if (!url || !secret) throw new Error("Supabase 환경 변수가 필요합니다.");
 const db = createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } });
-const code = `PT-9${randomInt(100000, 999999)}`;
+const code = process.env.AURA_TEST_CODE ?? `PT-9${randomInt(100000, 999999)}`;
+const keepTestData = process.env.AURA_KEEP_TEST_DATA === "1";
+if (keepTestData && code !== "PT-000") {
+  throw new Error("보존할 합성 테스트 참가자 코드는 PT-000만 허용합니다.");
+}
 const pin = String(randomInt(0, 100_000_000)).padStart(8, "0");
 const pinDigest = createHmac("sha256", secret).update("aura-pin-v1\0").update(pin).digest("hex");
 const questions = frame => source.frames.find(f => f.id === frame).texts
@@ -23,6 +27,7 @@ const post = { ...makeAnswers(["438:1215", "438:1226", "438:1237", "438:1180", "
   accuracy: 55, comments: "파일럿 화면과 진행 시간 점검 의견" };
 let participantId;
 let browser;
+let passed = false;
 
 async function event(page, stage, round, previousStage, previousRound, answers, decisions) {
   const response = await page.evaluate(async payload => {
@@ -52,7 +57,10 @@ try {
   if (issued.error || !issued.data) throw issued.error ?? new Error("Test participant issue failed");
   participantId = issued.data;
   const consent = await db.from("participants")
-    .update({ paper_consent_confirmed_at: new Date().toISOString() })
+    .update({
+      paper_consent_confirmed_at: new Date().toISOString(),
+      consent_document_version: "SYNTHETIC_TEST_NO_HUMAN_PARTICIPANT",
+    })
     .eq("id", participantId);
   if (consent.error) throw consent.error;
 
@@ -115,10 +123,21 @@ try {
     .select("answer_text").eq("participant_id", participantId)
     .eq("instrument", "free_text").single();
   if (commentError || !comment.answer_text) throw commentError ?? new Error("Free response missing");
+  passed = true;
   console.log("Pilot flow passed: browser login, surveys, 48 decisions, 19 page times, free response, completion.");
 } finally {
   if (browser) await browser.close();
-  if (participantId) {
+  if (participantId && keepTestData && passed) {
+    const clearConsent = await db.from("participants")
+      .update({ paper_consent_confirmed_at: null })
+      .eq("id", participantId);
+    if (clearConsent.error) throw clearConsent.error;
+    for (const table of ["participant_sessions", "participant_credentials"]) {
+      const { error } = await db.from(table).delete().eq("participant_id", participantId);
+      if (error) throw new Error(`Cleanup failed in ${table}: ${error.message}`);
+    }
+    console.log(`Synthetic participant ${code} retained for database inspection; no human consent recorded.`);
+  } else if (participantId) {
     for (const table of ["survey_answers", "decisions", "page_visits", "rounds", "assignments",
       "participant_sessions", "participant_credentials", "participants"]) {
       const column = table === "participants" ? "id" : "participant_id";
