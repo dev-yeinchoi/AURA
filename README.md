@@ -57,34 +57,50 @@ npm run dev
 
 실제 운영 전 필요한 결정: 설문 필수 여부/채점 기준, 개인정보 보관·접근 설정, Supabase 프로젝트 및 Vercel 연결입니다. 기본 정보 화면에는 나이 항목이 없어 임의로 추가하지 않았습니다. Figma의 문항 오탈자도 그대로 보존했습니다.
 
+### Supabase 프로젝트 생성 설정
+
+| 생성 화면 항목 | AURA 권장 입력 |
+| --- | --- |
+| Organization | 기존 `My Research (FREE)` 선택 |
+| GitHub (optional) | 생성 단계에서는 연결 생략. DB 스키마 변경을 코드로 관리할 준비가 되면 별도로 연결 |
+| Project name | `aura-research` |
+| Database password | 자동 생성한 강한 비밀번호를 비밀번호 관리자에 보관. Git·문서·채팅에 붙여 넣지 않음 |
+| Region | `Need a specific region?`에서 `Northeast Asia (Seoul)` 선택. `Auto`는 사용하지 않음 |
+| Enable Data API | 켬. 이후 `supabase-js`를 쓰는 서버 API에서 필요한 테이블만 접근 |
+| Automatically expose new tables | 끔. 필요한 테이블과 권한만 명시적으로 설정 |
+| Enable automatic RLS | 켬. 공개 스키마의 새 테이블에 자동 적용하고, 실제 정책·권한도 별도로 확인 |
+| Advanced Configuration | 지금은 기본값 유지 |
+
+> 프로젝트 생성만으로 앱과 DB가 연결되지는 않습니다. 실제 테이블·접근 정책을 만든 뒤 서버 전용 환경 변수와 API를 연결합니다. 모집 개인정보는 아래 별도 표의 접근 방식으로 관리합니다.
+
 ### 실제 운영 데이터 설계 초안 (ERD)
 
 `/preview`의 브라우저 저장은 아래 DB 구조를 구현한 것이 아닙니다. 실제 운영에서는 모든 응답을 서버에서 참가자 UUID에 연결하고, 참가자 코드만 화면에 보여줍니다.
 
 ```mermaid
 erDiagram
+  recruitment_applications o|--o| participants : 참여시연결
   participants ||--|| assignments : 배정
   participants ||--o{ rounds : 수행
   participants ||--o{ page_visits : 방문
   participants ||--o{ survey_answers : 응답
   participants ||--o{ decisions : 판단
-  participants ||--o{ content_views : 자료열람
   stimulus_sets ||--o{ assignments : 사용
   rounds ||--o{ decisions : 포함
   rounds ||--o{ page_visits : 포함
-  rounds ||--o{ survey_answers : 포함
-  page_visits ||--o{ content_views : 포함
 ```
+
+`recruitment_applications`는 Data API에 공개하지 않는 `private` 스키마에, 나머지는 연구 응답용 테이블에 둡니다. `survey_answers` 중 PPD·기본 정보·사후 설문은 라운드가 없으므로 `round_no = NULL`입니다. 위 그림에서 `rounds`와 `survey_answers`를 필수 관계로 연결하지 않은 이유입니다.
 
 | 테이블 | 한 행의 의미 | 주요 저장 항목 |
 | --- | --- | --- |
+| `private.recruitment_applications` | 모집 신청 1건 | 연락처·생년월일(필요한 경우)·예약 일시·신청 상태·선택적 참가자 연결. 연구 응답과 접근 권한을 분리 |
 | `participants` | 참가자 1명 | 내부 UUID, 표시 코드, `pilot/main` 구분, 진행 상태, 서면 동의 확인 여부·문서 버전·확인 시각, 시작·완료 시각 |
 | `assignments` | 참가자별 1회 배정 | Authority Low/High, Explanation None/FI/Case, 네 가지 라운드 순서 중 하나, 자극 자료 버전, 배정 시각 |
 | `rounds` | 참가자의 Risk 라운드 1개 | 1/2번 라운드, Low/High, 직원 묶음 A/B, 시작·종료 시각 |
 | `page_visits` | 화면에 들어올 때마다 1행 | 화면 이름, 라운드, 진입·이탈·마지막 접속 시각, 실제 보이는 동안의 시간 `active_ms`, 전체 경과 `wall_ms`, 이탈 사유. 재방문은 새 행 |
-| `survey_answers` | 설문 문항별 응답 1개 | 문항 묶음, 원본 Figma 문항 ID, 숫자 선택 또는 자유서술, 답변 시각. 수정 전 선택 이력은 필요할 때만 추가 |
+| `survey_answers` | 설문 문항별 응답 1개 | 문항 묶음, 선택적 라운드 번호, 원본 Figma 문항 ID, 숫자 선택 또는 자유서술, 답변 시각. 수정 전 선택 이력은 필요할 때만 추가 |
 | `decisions` | 직원 1명에 대한 한 단계의 확정 판단 | 라운드, 직원 ID, `initial/final`, 배정 1·보류 0, 선택·제출 시각. AURA 판단·정답은 자극 버전으로 연결 |
-| `content_views` | 직원·유사 사례 카드의 열람 1회 | 어떤 카드가 어느 화면에서 보였는지와 화면에 보인 시간 |
 | `stimulus_sets` | 고정된 실험 자료 버전 1개 | 직원·유사 사례 수치와 AI 판단·정답·FI 값의 원본, 버전, 해시 |
 
 **표기:** `PK`는 각 행을 구별하는 고유값, `FK`는 다른 테이블의 행을 가리키는 연결값입니다. 아래 컬럼은 실제 DB를 만들기 전 검토할 설계안입니다.
@@ -102,9 +118,23 @@ erDiagram
 | `started_at`, `completed_at` | 실험 시작·완료 시각. 둘의 차이는 전체 **경과 시간**이며, 중도 종료면 `completed_at`은 비어 있습니다. |
 | `created_at` | 코드가 발급되어 행이 생성된 시각. |
 
-모집 단계의 **이름·전화번호·가능 시간·출생연도는 이 실험 응답 테이블에 넣지 않습니다.** 모집 연락처는 별도로 접근을 제한해 관리하고, 연결이 필요하면 참가자 코드만 사용합니다.
+모집 단계의 이름·연락처·예약 정보는 이 실험 응답 테이블에 넣지 않습니다. 참가자와 연결해야 할 때는 표시 코드 대신 내부 UUID를 사용하고, 분석 자료에는 연락처 연결 정보를 내보내지 않습니다.
 
-#### 2. `assignments` — 실험 조건 배정
+#### 2. `private.recruitment_applications` — 모집 신청과 예약
+
+| 컬럼 | 뜻과 예시 |
+| --- | --- |
+| `id` (PK, UUID) | 신청 자체의 내부 식별자. 아직 참가자 코드를 발급하지 않아도 만들 수 있습니다. |
+| `name`, `phone`, `email` | 신청자의 이름과 연락처. 실제 모집에 필요한 항목만 수집합니다. |
+| `birth_date` | 생년월일이 승인된 모집 문서와 운영에 필요한 경우에만 저장합니다. 출생연도만 필요하면 연도만 수집합니다. |
+| `reserved_at` | 실험 예약 날짜와 시간을 담는 `timestamptz`. 화면에서는 한국 시간(`Asia/Seoul`)으로 표시합니다. |
+| `status` | 신청·예약 확정·취소·참석·불참 등 모집 진행 상태. |
+| `participant_id` (선택적 고유 FK) | 실제 참여해 코드가 발급된 뒤 `participants.id`와 연결합니다. 신청만 하고 참여하지 않았다면 `NULL`입니다. |
+| `created_at`, `updated_at` | 신청 생성·마지막 변경 시각. |
+
+> **접근:** 이 테이블은 Supabase의 Data API에 노출하지 않는 `private` 스키마에 두고, 연구자용 서버 경로의 서버 전용 Postgres 연결 또는 승인된 관리 절차에서만 접근합니다. 브라우저에는 DB 비밀번호나 관리자 비밀키를 보내지 않습니다. 모집 정보의 수집 항목·보관 기간·삭제 시점은 최종 승인된 연구 문서에 맞춰 확정합니다. 기관이 외부 클라우드 보관을 허용하지 않는다면 기관 승인 저장소에 두고 앱에는 참가자 UUID만 연결합니다.
+
+#### 3. `assignments` — 실험 조건 배정
 
 | 컬럼 | 뜻과 예시 |
 | --- | --- |
@@ -115,7 +145,7 @@ erDiagram
 | `stimulus_version` (FK) | 사용한 `stimulus_sets.version`. 당시 직원 수치·정답·AI 결과를 복원할 수 있게 합니다. |
 | `assigned_at` | 서버가 조건을 **한 번만** 배정한 시각. 중복 요청에도 같은 배정을 반환해야 합니다. |
 
-#### 3. `rounds` — 두 번의 판단 과제
+#### 4. `rounds` — 두 번의 판단 과제
 
 | 컬럼 | 뜻과 예시 |
 | --- | --- |
@@ -124,7 +154,7 @@ erDiagram
 | `form_code` | 해당 라운드의 직원 묶음 `A`/`B`. 같은 묶음을 반복하지 않습니다. |
 | `started_at`, `completed_at` | 라운드 시작·종료 시각. 중단된 라운드는 종료 시각이 비어 있습니다. |
 
-#### 4. `page_visits` — 화면별 시간
+#### 5. `page_visits` — 화면별 시간
 
 | 컬럼 | 뜻과 예시 |
 | --- | --- |
@@ -137,12 +167,12 @@ erDiagram
 | `active_ms` | 화면이 실제로 보인 동안의 밀리초. 숨긴 탭·중단 시간을 빼고 누적합니다. |
 | `exit_reason` | 다음 단계·이전 화면 확인·새로고침·재접속·중단 등 방문이 끝난 이유. |
 
-#### 5. `survey_answers` — 설문 원응답
+#### 6. `survey_answers` — 설문 원응답
 
 | 컬럼 | 뜻과 예시 |
 | --- | --- |
 | `id` (PK), `participant_id` (FK) | 문항 응답의 고유값과 참가자. |
-| `round_no` | Risk 확인·Trust처럼 라운드별 문항이면 1/2, 기본 정보·PPD·마무리 설문이면 비어 있습니다. |
+| `round_no` (NULL 허용) | Risk 확인·Trust처럼 라운드별 문항이면 1/2, 기본 정보·PPD·마무리 설문이면 `NULL`입니다. `0`을 대신 넣지 않습니다. |
 | `instrument` | `demographics`, `ppd`, `risk_check`, `trust`, `manipulation_check`, `accuracy`, `umux`, `free_text` 등 문항 묶음. |
 | `question_key` | 앱 안에서 바뀌지 않는 문항 키. 예: `gender`, `ppd_01`, `accuracy`. |
 | `figma_node_id` | 피그마 원문 문항의 노드 ID. 화면에 없는 내부 문항이라면 비울 수 있습니다. |
@@ -152,7 +182,9 @@ erDiagram
 
 선택지 번호만으로 해석이 달라지지 않도록 **문항·선택지 버전**도 고정합니다. 특히 PPD·Trust 점수는 원응답을 보존한 채 분석할 때 계산합니다.
 
-#### 6. `decisions` — 직원별 첫·최종 판단
+`round_no`가 1/2인 응답은 해당 참가자의 실제 `rounds` 행과 일치해야 합니다. `NULL`인 응답도 `participant_id`로 참가자에게 연결되므로 누락되지 않습니다.
+
+#### 7. `decisions` — 직원별 첫·최종 판단
 
 | 컬럼 | 뜻과 예시 |
 | --- | --- |
@@ -163,16 +195,6 @@ erDiagram
 
 한 참가자가 두 라운드를 완료하면 직원 12명 × 첫·최종 판단 2단계 × 2라운드로 **최대 48행**입니다. AURA 판단·정답·FI 값은 참가자 선택과 섞지 않고 `stimulus_sets`에서 읽습니다.
 
-#### 7. `content_views` — 프로필과 유사 사례 열람
-
-| 컬럼 | 뜻과 예시 |
-| --- | --- |
-| `id` (PK), `page_visit_id` (FK), `participant_id` (FK) | 어느 화면 방문에서 누가 자료를 봤는지 연결합니다. |
-| `round_no`, `content_type`, `content_id` | 라운드, `employee`/`case`, 직원 `A03`이나 사례 `AC03` 같은 자료 ID. |
-| `visible_at`, `hidden_at`, `visible_ms` | 카드가 실제 화면에 보이기 시작·끝난 시각과 보인 시간. 단순히 목록에 실린 것과 실제 열람을 구분합니다. |
-
-카드가 몇 초 이상 보여야 열람으로 볼지, 스크롤 중 잠깐 스친 경우를 어떻게 처리할지는 파일럿에서 정합니다. 이 기록만으로 내용을 이해했다고 해석하지 않습니다.
-
 #### 8. `stimulus_sets` — 직원·AI 자료의 고정본
 
 | 컬럼 | 뜻과 예시 |
@@ -181,6 +203,8 @@ erDiagram
 | `sha256` | 파일 내용이 바뀌지 않았는지 확인하는 해시값. |
 | `payload` | A/B 직원 특성값, 정답, AURA 추천·FI, 연결된 유사 사례와 해당 사례 값을 담은 고정 JSON. 참가자별로 반복 저장하지 않습니다. |
 | `created_at` | 자료 버전을 등록한 시각. |
+
+유사 사례는 FI 아래 자동으로 표시되고 별도 열기 동작이 없으므로 `content_views` 테이블은 만들지 않습니다. AI 추천 정보 화면의 체류 시간은 `page_visits`에 기록합니다. 이 시간만으로 개별 사례를 실제로 읽었다고 해석하지 않습니다.
 
 > **시간 기록:** 01~14 화면과 로딩 화면을 각각 기록합니다. 다음 화면으로 넘어갈 때 진입·이탈 시각과 소요 시간을 확정하고, 페이지가 열린 동안에는 주기적으로 `last_seen_at`과 보이는 시간을 저장합니다. 숨긴 탭의 시간은 `wall_ms`에만 넣고 `active_ms`에서는 뺍니다. 전체 경과는 시작~완료 시각, 전체 활동 시간은 각 방문의 `active_ms` 합계로 계산합니다. 브라우저가 갑자기 종료되면 마지막 접속 시각까지만 확인할 수 있으므로 미완료 방문으로 구분합니다.
 
