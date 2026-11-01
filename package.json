@@ -8,7 +8,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "participant:issue": "node --env-file=.env.local scripts/issue-participant.mjs"
   },
   "dependencies": {
     "@fontsource/noto-sans-kr": "^5.3.1",

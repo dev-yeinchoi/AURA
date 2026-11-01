@@ -27,10 +27,10 @@ npm run dev
 | 기기 | PC·노트북 브라우저. Figma 기준 1440×900, 좁은 화면은 줄바꿈·스크롤 적용 |
 | 설문 | Figma 원문 수령 및 화면 구현. PPD15/상황 인식4/Trust3/사후 설문 |
 | 실험 흐름 | 개발용 두 라운드 미리보기, 6조건 선택, 초기·최종 응답 분리, 제출 단계 잠금, 브라우저 이어하기 |
-| 실제 운영 | Supabase 초기 DB 구조·서버 전용 클라이언트 준비 완료. 참가자 조회·서버 배정·응답 저장 API·연구자 내보내기·Vercel 배포는 아직 연결 전 |
+| 실제 운영 | Supabase 구조와 코드+PIN 인증 API 적용. 서버 배정·응답 저장·실제 과제 화면·연구자 내보내기·Vercel 배포는 아직 연결 전 |
 | 연구 문서 | 첨부 설명문·서면 동의서는 로컬 개발 미리보기에만 연결. 공개 저장소·배포에는 포함하지 않음 |
 
-> `/preview`는 개발 환경에서만 열립니다. 입력은 해당 브라우저의 개발용 저장소에만 남으며 실제 연구 데이터로 사용할 수 없습니다. `/`에서 참가자 번호 확인은 아직 실제 조회를 수행하지 않습니다. 미리보기의 동의 선택은 서면 동의서의 서명을 대신하지 않습니다.
+> `/preview`는 개발 환경에서만 열립니다. 입력은 해당 브라우저의 개발용 저장소에만 남으며 실제 연구 데이터로 사용할 수 없습니다. `/`의 코드+PIN 확인은 실제 DB를 조회하지만, **시작하기 버튼은 아직 비활성**입니다. 미리보기의 동의 선택은 서면 동의서의 서명을 대신하지 않습니다.
 
 ## 최신 연구 결정
 
@@ -44,7 +44,7 @@ npm run dev
 
 ## 확인한 내용
 
-타입 검사·배포용 빌드, 실험 규칙 테스트 7개, 전체 흐름/6조건 브라우저 테스트 2개를 통과했습니다. Chrome 1440×900·1366×768·1920×1080에서 가로 넘침을 확인했고, 배포용 `/preview`는 404로 생성됩니다. 실제 DB 저장·서버 배정 검증은 연결 후 진행합니다.
+타입 검사·배포용 빌드, 실험 규칙 테스트 7개, 전체 흐름/6조건 브라우저 테스트 2개를 통과했습니다. PIN 발급·오류 잠금·1회 사용·재발급·세션·로그아웃도 임시 참가자로 API와 브라우저에서 검증하고 자료를 삭제했습니다. Chrome 1440×900·1366×768·1920×1080에서 가로 넘침을 확인했고, 배포용 `/preview`는 404로 생성됩니다. 실제 응답 저장·서버 조건 배정은 아직 연결 전입니다.
 
 ## 자료와 다음 연결 작업
 
@@ -71,11 +71,11 @@ npm run dev
 | Enable automatic RLS | 켬. 공개 스키마의 새 테이블에 자동 적용하고, 실제 정책·권한도 별도로 확인 |
 | Advanced Configuration | 지금은 기본값 유지 |
 
-> `aura-research` 프로젝트는 서울 리전에 생성됐고 초기 테이블·접근 제한을 2026-11-02에 적용했습니다. 아직 앱에서 DB 응답을 저장하지 않습니다. [서버 전용 클라이언트](src/lib/supabase-admin.ts)를 준비했으며 다음 단계는 서버 전용 키 입력과 API 연결입니다. 모집 개인정보는 아래 별도 표의 접근 방식으로 관리합니다.
+> `aura-research` 프로젝트는 서울 리전에 생성됐고 테이블·접근 제한·PIN 인증 구조를 2026-11-02에 적용했습니다. 서버 전용 키와 [클라이언트](src/lib/supabase-admin.ts) 연결은 확인했습니다. 아직 앱에서 실험 응답을 저장하지 않습니다. 모집 개인정보는 아래 별도 표의 접근 방식으로 관리합니다.
 
 ### DB 초기 구조 적용
 
-초기 테이블·제약·접근 제한은 [마이그레이션 SQL](supabase/migrations/20261102000000_initial_experiment_schema.sql)에 있습니다. 원격 DB에 적용한 뒤 타입을 생성해 8개 테이블을 확인했습니다. Publishable key로 `participants`·`survey_answers`를 조회하면 401, 비공개 모집 스키마를 조회하면 406을 반환합니다. **다른 프로젝트에 같은 구조를 재현할 때** 다음 순서로 적용합니다.
+테이블·제약·접근 제한은 [초기 스키마](supabase/migrations/20261102000000_initial_experiment_schema.sql), [PIN·세션 스키마](supabase/migrations/20261102010000_participant_pin_sessions.sql), [재발급 시 세션 취소](supabase/migrations/20261102020000_revoke_sessions_on_pin_reissue.sql)에 있습니다. 원격 DB에 적용한 뒤 타입을 생성해 테이블을 확인했습니다. Publishable key로 `participants`·`survey_answers`를 조회하면 401, 비공개 모집 스키마를 조회하면 406을 반환합니다. **다른 프로젝트에 같은 구조를 재현할 때** 다음 순서로 적용합니다.
 
 ```sh
 cd /Users/yein/Developer/projects/aura
@@ -85,7 +85,20 @@ npx supabase db push --dry-run
 npx supabase db push
 ```
 
-`link` 과정에서 DB 비밀번호를 묻는다면 로컬 터미널에만 입력합니다. `db push --dry-run`은 적용할 마이그레이션 목록을 확인하는 단계이며 SQL 실행 검증은 실제 적용과 이후 스키마 조회로 확인해야 합니다. `supabase db reset --linked`는 원격 DB를 지우므로 사용하지 않습니다. `private.recruitment_applications`의 실제 모집 입력 화면·권한과 본 실험 참가자 API는 아직 구현 전입니다. 로컬 DB 검증은 Docker가 실행 중이지 않아 아직 하지 못했습니다.
+`link` 과정에서 DB 비밀번호를 묻는다면 로컬 터미널에만 입력합니다. `db push --dry-run`은 적용할 마이그레이션 목록을 확인하는 단계이며 SQL 실행 검증은 실제 적용과 이후 스키마 조회로 확인해야 합니다. `supabase db reset --linked`는 원격 DB를 지우므로 사용하지 않습니다. `private.recruitment_applications`의 실제 모집 입력 화면과 실험 응답 API는 아직 구현 전입니다. 로컬 DB 검증은 Docker가 실행 중이지 않아 아직 하지 못했습니다.
+
+### 참가자 코드와 일회용 PIN
+
+참가자 번호 `PT-001`/`MT-001`은 추측할 수 있으므로 **8자리 일회용 PIN**을 함께 확인합니다. PIN은 발급 후 15분 동안만 유효하고, 5회 틀리면 15분 동안 잠깁니다. 사용한 PIN은 다시 쓸 수 없습니다. 로그인 후 같은 브라우저에는 최대 8시간 유효한 HttpOnly 세션 쿠키를 둡니다. PIN 재발급 시 이전 세션은 취소됩니다. PIN 원문은 DB에 저장하지 않습니다.
+
+```sh
+cd /Users/yein/Developer/projects/aura
+npm run participant:issue -- pilot
+npm run participant:issue -- main
+npm run participant:issue -- --reissue PT-001
+```
+
+위 명령은 **진행자만** 실행합니다. 참가자 코드와 PIN은 터미널에 한 번 표시되므로 대면 전달하고 채팅·GitHub에 올리지 않습니다. 실제 실험 시작 화면과 응답 저장, 서면 동의 확인 절차가 아직 연결되지 않았으므로 현재는 실제 참가자 코드를 발급해 운영하지 않습니다. 임시 코드로 수행한 인증 점검은 종료 후 DB에서 정리했습니다.
 
 ### 실제 운영 데이터 설계 초안 (ERD)
 
@@ -95,6 +108,8 @@ npx supabase db push
 erDiagram
   recruitment_applications o|--o| participants : 참여시연결
   participants ||--|| assignments : 배정
+  participants ||--o| participant_credentials : PIN
+  participants ||--o{ participant_sessions : 세션
   participants ||--o{ rounds : 수행
   participants ||--o{ page_visits : 방문
   participants ||--o{ survey_answers : 응답
@@ -110,6 +125,8 @@ erDiagram
 | --- | --- | --- |
 | `private.recruitment_applications` | 모집 신청 1건 | 연락처·생년월일(필요한 경우)·예약 일시·신청 상태·선택적 참가자 연결. 연구 응답과 접근 권한을 분리 |
 | `participants` | 참가자 1명 | 내부 UUID, 표시 코드, `pilot/main` 구분, 진행 상태, 서면 동의 확인 여부·문서 버전·확인 시각, 시작·완료 시각 |
+| `participant_credentials` | 참가자별 현재 PIN 1개 | PIN 해시·만료·사용 시각·실패 횟수·잠금 시각. 원문 PIN은 저장하지 않음 |
+| `participant_sessions` | 로그인 세션 1개 | 임의 토큰의 해시·참가자·만료·취소 시각. 쿠키 원문은 저장하지 않음 |
 | `assignments` | 참가자별 1회 배정 | Authority Low/High, Explanation None/FI/Case, 네 가지 라운드 순서 중 하나, 자극 자료 버전, 배정 시각 |
 | `rounds` | 참가자의 Risk 라운드 1개 | 1/2번 라운드, Low/High, 직원 묶음 A/B, 시작·종료 시각 |
 | `page_visits` | 화면에 들어올 때마다 1행 | 화면 이름, 라운드, 진입·이탈·마지막 접속 시각, 실제 보이는 동안의 시간 `active_ms`, 전체 경과 `wall_ms`, 이탈 사유. 재방문은 새 행 |
@@ -117,7 +134,7 @@ erDiagram
 | `decisions` | 직원 1명에 대한 한 단계의 확정 판단 | 라운드, 직원 ID, `initial/final`, 배정 1·보류 0, 선택·제출 시각. AURA 판단·정답은 자극 버전으로 연결 |
 | `stimulus_sets` | 고정된 실험 자료 버전 1개 | 직원·유사 사례 수치와 AI 판단·정답·FI 값의 원본, 버전, 해시 |
 
-**표기:** `PK`는 각 행을 구별하는 고유값, `FK`는 다른 테이블의 행을 가리키는 연결값입니다. 아래 컬럼은 실제 DB를 만들기 전 검토할 설계안입니다.
+**표기:** `PK`는 각 행을 구별하는 고유값, `FK`는 다른 테이블의 행을 가리키는 연결값입니다. 아래 컬럼은 적용된 DB 구조를 쉽게 설명한 것입니다. 실제 컬럼명과 제약은 마이그레이션 파일이 기준입니다.
 
 #### 1. `participants` — 참가자 기본 기록
 
@@ -133,6 +150,16 @@ erDiagram
 | `created_at` | 코드가 발급되어 행이 생성된 시각. |
 
 모집 단계의 이름·연락처·예약 정보는 이 실험 응답 테이블에 넣지 않습니다. 참가자와 연결해야 할 때는 표시 코드 대신 내부 UUID를 사용하고, 분석 자료에는 연락처 연결 정보를 내보내지 않습니다.
+
+`participant_credentials`와 `participant_sessions`는 인증용 별도 테이블입니다. 브라우저의 공개 키에는 접근 권한이 없으며 연구 분석 자료에도 포함하지 않습니다.
+
+| 인증 테이블·컬럼 | 뜻 |
+| --- | --- |
+| `participant_credentials.participant_id` | PIN이 발급된 참가자의 내부 UUID. 참가자별 현재 PIN 1개만 둡니다. |
+| `pin_digest`, `pin_expires_at`, `pin_used_at` | PIN을 서버에서 변환한 값, 만료 시각, 사용 시각. 원문 PIN은 저장하지 않습니다. |
+| `failed_attempts`, `locked_until`, `issued_at` | 잘못 입력한 횟수, 잠금 종료 시각, 최근 발급 시각. |
+| `participant_sessions.token_digest`, `participant_id` | 브라우저 쿠키의 임의 토큰을 변환한 값과 해당 참가자. |
+| `created_at`, `expires_at`, `revoked_at` | 세션 생성·만료·취소 시각. 만료 또는 취소된 세션은 사용할 수 없습니다. |
 
 #### 2. `private.recruitment_applications` — 모집 신청과 예약
 
@@ -224,7 +251,7 @@ erDiagram
 
 | 화면 | 저장할 내용 |
 | --- | --- |
-| 01 참가자 번호 | 코드 확인 결과, 최초 접속 시각. 이름·전화번호는 실험 응답과 함께 저장하지 않음 |
+| 01 참가자 번호 | 코드+PIN 확인과 세션 발급. 이름·전화번호는 실험 응답과 함께 저장하지 않음 |
 | 02 설명문·03 동의서 | 각각의 방문 시간, 서면 동의 확인 기록과 문서 버전. 미리보기 라디오 선택은 실제 서명이 아님 |
 | 04 기본 정보·05 사전 설문 | 성별·학력·AI 사용 경험, PPD 15문항. 나이는 현재 화면에 없음 |
 | 06 상황 설명·07 상황 인식 | 시나리오 Risk·직원 묶음, 네 가지 상황 인식 응답, 화면별 시간 |
@@ -242,11 +269,11 @@ RAIR·RSR·과신/과소의존은 `decisions`의 첫·최종 판단과 버전이
 
 ### Supabase·Vercel 연결 순서
 
-1. Supabase의 기존 `My Research (FREE)` 조직에 `aura-research` 프로젝트를 만들고 초기 마이그레이션을 적용했습니다. Free는 비활성 기간 후 일시 중지될 수 있으므로 본 실험 전 백업·운영 안정성에 맞춰 Pro 전환을 검토합니다. 로컬 `.env.local`에 Project URL과 Publishable key를 입력했습니다. 서버에서만 쓸 Secret key는 별도로 보관하며 채팅·GitHub에 올리지 않습니다.
+1. Supabase의 기존 `My Research (FREE)` 조직에 `aura-research` 프로젝트를 만들고 DB·PIN 마이그레이션을 적용했습니다. Free는 비활성 기간 후 일시 중지될 수 있으므로 본 실험 전 백업·운영 안정성에 맞춰 Pro 전환을 검토합니다. 로컬 `.env.local`에 Project URL·Publishable key·서버 전용 Secret key를 입력했습니다. 비밀키는 채팅·GitHub에 올리지 않습니다.
 2. Vercel에서 **Add New → Project → Import Git Repository**로 `dev-yeinchoi/AURA`를 가져옵니다. Framework Preset은 Next.js, Root Directory는 저장소 루트입니다. 현재 연결된 Vercel 계정에는 AURA 프로젝트가 아직 보이지 않습니다.
 3. Vercel의 **Project Settings → Environment Variables**에 Supabase URL·Publishable key를 등록합니다. 서버 저장 API를 구현할 때만 Secret key를 서버 전용 변수로 등록합니다. 로컬에서는 `cp .env.example .env.local` 후 같은 키 이름에 값을 넣습니다. 비밀 값은 출력하거나 커밋하지 않습니다. **현재 앱에는 DB 연동 코드가 없어 키만 입력해도 응답은 저장되지 않습니다.**
 4. **이미 구입한 `yeinchoi.com`을 사용합니다.** `aura.yeinchoi.com`은 별도 구매가 필요한 새 도메인이 아니라 같은 도메인 아래의 서브도메인입니다. Vercel 프로젝트에 이 주소를 추가하고 안내되는 CNAME을 현재 DNS 관리 서비스에 설정합니다. 기존 `yeinchoi.com` 웹사이트와 이메일 레코드는 유지합니다. 실제 연구 개시 전까지는 Vercel Preview URL에서 검증합니다.
-5. 위 ERD의 초기 DB 테이블·접근 제한(RLS/권한)은 적용했습니다. 다음으로 참가자 코드 확인·균형 배정·중간 저장·재접속·연구자 내보내기를 구현하고 파일럿 데이터와 본 실험 데이터를 분리 검증합니다.
+5. 위 ERD의 DB·PIN 인증 구조는 적용했습니다. 다음으로 서면 동의 확인·균형 배정·응답과 화면별 시간 저장·재접속·연구자 내보내기를 구현하고 파일럿 데이터와 본 실험 데이터를 분리 검증합니다.
 
 GitHub: https://github.com/dev-yeinchoi/AURA.git
 로컬: `/Users/yein/Developer/projects/aura`

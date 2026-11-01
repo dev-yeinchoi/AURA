@@ -203,6 +203,76 @@ export type Database = {
           },
         ]
       }
+      participant_credentials: {
+        Row: {
+          failed_attempts: number
+          issued_at: string
+          locked_until: string | null
+          participant_id: string
+          pin_digest: string
+          pin_expires_at: string
+          pin_used_at: string | null
+        }
+        Insert: {
+          failed_attempts?: number
+          issued_at?: string
+          locked_until?: string | null
+          participant_id: string
+          pin_digest: string
+          pin_expires_at: string
+          pin_used_at?: string | null
+        }
+        Update: {
+          failed_attempts?: number
+          issued_at?: string
+          locked_until?: string | null
+          participant_id?: string
+          pin_digest?: string
+          pin_expires_at?: string
+          pin_used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participant_credentials_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: true
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participant_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          participant_id: string
+          revoked_at: string | null
+          token_digest: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          participant_id: string
+          revoked_at?: string | null
+          token_digest: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          participant_id?: string
+          revoked_at?: string | null
+          token_digest?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participant_sessions_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       participants: {
         Row: {
           completed_at: string | null
@@ -354,7 +424,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      issue_participant: {
+        Args: {
+          p_code: string
+          p_expires_at: string
+          p_phase: string
+          p_pin_digest: string
+        }
+        Returns: string
+      }
+      redeem_participant_pin: {
+        Args: { p_code: string; p_pin_digest: string }
+        Returns: string
+      }
+      reissue_participant_pin: {
+        Args: { p_code: string; p_expires_at: string; p_pin_digest: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
