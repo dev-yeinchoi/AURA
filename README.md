@@ -68,19 +68,119 @@ erDiagram
   participants ||--o{ page_visits : 방문
   participants ||--o{ survey_answers : 응답
   participants ||--o{ decisions : 판단
+  participants ||--o{ content_views : 자료열람
+  stimulus_sets ||--o{ assignments : 사용
   rounds ||--o{ decisions : 포함
   rounds ||--o{ page_visits : 포함
   rounds ||--o{ survey_answers : 포함
+  page_visits ||--o{ content_views : 포함
 ```
 
 | 테이블 | 한 행의 의미 | 주요 저장 항목 |
 | --- | --- | --- |
 | `participants` | 참가자 1명 | 내부 UUID, 표시 코드, `pilot/main` 구분, 진행 상태, 서면 동의 확인 여부·문서 버전·확인 시각, 시작·완료 시각 |
-| `assignments` | 참가자별 1회 배정 | Authority Low/High, Explanation None/FI/Case, 네 가지 라운드 순서 중 하나, 자극 자료 버전·해시, 배정 시각 |
+| `assignments` | 참가자별 1회 배정 | Authority Low/High, Explanation None/FI/Case, 네 가지 라운드 순서 중 하나, 자극 자료 버전, 배정 시각 |
 | `rounds` | 참가자의 Risk 라운드 1개 | 1/2번 라운드, Low/High, 직원 묶음 A/B, 시작·종료 시각 |
 | `page_visits` | 화면에 들어올 때마다 1행 | 화면 이름, 라운드, 진입·이탈·마지막 접속 시각, 실제 보이는 동안의 시간 `active_ms`, 전체 경과 `wall_ms`, 이탈 사유. 재방문은 새 행 |
 | `survey_answers` | 설문 문항별 응답 1개 | 문항 묶음, 원본 Figma 문항 ID, 숫자 선택 또는 자유서술, 답변 시각. 수정 전 선택 이력은 필요할 때만 추가 |
 | `decisions` | 직원 1명에 대한 한 단계의 확정 판단 | 라운드, 직원 ID, `initial/final`, 배정 1·보류 0, 선택·제출 시각. AURA 판단·정답은 자극 버전으로 연결 |
+| `content_views` | 직원·유사 사례 카드의 열람 1회 | 어떤 카드가 어느 화면에서 보였는지와 화면에 보인 시간 |
+| `stimulus_sets` | 고정된 실험 자료 버전 1개 | 직원·유사 사례 수치와 AI 판단·정답·FI 값의 원본, 버전, 해시 |
+
+**표기:** `PK`는 각 행을 구별하는 고유값, `FK`는 다른 테이블의 행을 가리키는 연결값입니다. 아래 컬럼은 실제 DB를 만들기 전 검토할 설계안입니다.
+
+#### 1. `participants` — 참가자 기본 기록
+
+| 컬럼 | 뜻과 예시 |
+| --- | --- |
+| `id` (PK, UUID) | 시스템 내부 식별자. `PT-001` 같은 표시 코드와 별도로 생성합니다. 모든 응답을 연결하는 기준입니다. |
+| `participant_code` (고유) | 참가자가 입력하는 코드. 파일럿 `PT-001`, 본 실험 `MT-001`처럼 중복 없이 발급합니다. |
+| `phase` | `pilot` 또는 `main`. 코드 앞글자와 별도로 저장해 파일럿 자료를 분석에서 확실히 분리합니다. |
+| `status` | 발급됨·진행 중·완료·중단·참여 거절 중 현재 상태. 재접속과 완료 여부 판단에 사용합니다. |
+| `consent_document_version` | 실제 대면 서면 동의서의 승인본 버전. 어떤 문서로 동의를 받았는지 남깁니다. |
+| `paper_consent_confirmed_at` | 진행자가 서면 동의를 확인한 시각. 미리보기 화면의 라디오 클릭으로 채우지 않습니다. |
+| `started_at`, `completed_at` | 실험 시작·완료 시각. 둘의 차이는 전체 **경과 시간**이며, 중도 종료면 `completed_at`은 비어 있습니다. |
+| `created_at` | 코드가 발급되어 행이 생성된 시각. |
+
+모집 단계의 **이름·전화번호·가능 시간·출생연도는 이 실험 응답 테이블에 넣지 않습니다.** 모집 연락처는 별도로 접근을 제한해 관리하고, 연결이 필요하면 참가자 코드만 사용합니다.
+
+#### 2. `assignments` — 실험 조건 배정
+
+| 컬럼 | 뜻과 예시 |
+| --- | --- |
+| `participant_id` (PK·FK) | `participants.id`와 연결합니다. 한 사람에게 배정 행은 하나입니다. |
+| `authority_cue` | `low` 또는 `high`. AI를 참고용/공식 지정 시스템 중 어떻게 제시했는지입니다. |
+| `explanation_type` | `none`, `fi`, `case`. 설명 없음·특성별 기여도·기여도+유사 사례 중 하나입니다. |
+| `sequence_code` | 네 가지 Risk×직원 묶음 순서 중 하나. 예: `A-L → B-H`. 재접속 때 다시 뽑지 않습니다. |
+| `stimulus_version` (FK) | 사용한 `stimulus_sets.version`. 당시 직원 수치·정답·AI 결과를 복원할 수 있게 합니다. |
+| `assigned_at` | 서버가 조건을 **한 번만** 배정한 시각. 중복 요청에도 같은 배정을 반환해야 합니다. |
+
+#### 3. `rounds` — 두 번의 판단 과제
+
+| 컬럼 | 뜻과 예시 |
+| --- | --- |
+| `participant_id` (FK), `round_no` | 누구의 몇 번째 라운드인지. `round_no`는 1 또는 2이며 두 값을 함께 고유하게 관리합니다. |
+| `risk_level` | 해당 라운드의 `low`/`high`. 두 Risk를 각각 한 번 경험합니다. |
+| `form_code` | 해당 라운드의 직원 묶음 `A`/`B`. 같은 묶음을 반복하지 않습니다. |
+| `started_at`, `completed_at` | 라운드 시작·종료 시각. 중단된 라운드는 종료 시각이 비어 있습니다. |
+
+#### 4. `page_visits` — 화면별 시간
+
+| 컬럼 | 뜻과 예시 |
+| --- | --- |
+| `id` (PK), `participant_id` (FK) | 이 화면 방문의 고유값과 참가자. 같은 화면을 다시 열면 새 방문 행을 만듭니다. |
+| `round_no` | 라운드 화면이면 1/2, 공통 시작·마무리 화면이면 비어 있습니다. |
+| `page_key` | `demographics`, `ppd`, `scenario`, `browse`, `initial`, `loading`, `advice`, `final`, `trust`, `post` 등 안정적인 화면 이름. |
+| `entered_at`, `left_at` | 화면에 들어온 시각과 다음 화면으로 나간 시각. 브라우저가 갑자기 닫히면 이탈 시각은 비어 있을 수 있습니다. |
+| `last_seen_at` | 화면이 열린 동안 주기적으로 서버에 남기는 마지막 접속 시각. 갑작스러운 종료 시 확인 가능한 마지막 지점입니다. |
+| `wall_ms` | 진입부터 이탈까지의 전체 밀리초. 탭이 숨겨진 시간도 포함합니다. |
+| `active_ms` | 화면이 실제로 보인 동안의 밀리초. 숨긴 탭·중단 시간을 빼고 누적합니다. |
+| `exit_reason` | 다음 단계·이전 화면 확인·새로고침·재접속·중단 등 방문이 끝난 이유. |
+
+#### 5. `survey_answers` — 설문 원응답
+
+| 컬럼 | 뜻과 예시 |
+| --- | --- |
+| `id` (PK), `participant_id` (FK) | 문항 응답의 고유값과 참가자. |
+| `round_no` | Risk 확인·Trust처럼 라운드별 문항이면 1/2, 기본 정보·PPD·마무리 설문이면 비어 있습니다. |
+| `instrument` | `demographics`, `ppd`, `risk_check`, `trust`, `manipulation_check`, `accuracy`, `umux`, `free_text` 등 문항 묶음. |
+| `question_key` | 앱 안에서 바뀌지 않는 문항 키. 예: `gender`, `ppd_01`, `accuracy`. |
+| `figma_node_id` | 피그마 원문 문항의 노드 ID. 화면에 없는 내부 문항이라면 비울 수 있습니다. |
+| `answer_number` | 선택지 번호(예: 1~5·1~7), 또는 체감 정확도 값(0~100, 5단위). 자유서술이면 비웁니다. |
+| `answer_text` | 자유서술 원문. 숫자 선택 문항이면 비웁니다. |
+| `updated_at`, `submitted_at` | 마지막으로 답을 바꾼 시각과 해당 설문 화면을 확정한 시각. 확정 후 수정은 막습니다. |
+
+선택지 번호만으로 해석이 달라지지 않도록 **문항·선택지 버전**도 고정합니다. 특히 PPD·Trust 점수는 원응답을 보존한 채 분석할 때 계산합니다.
+
+#### 6. `decisions` — 직원별 첫·최종 판단
+
+| 컬럼 | 뜻과 예시 |
+| --- | --- |
+| `participant_id` (FK), `round_no`, `employee_id`, `stage` | 누가·몇 번째 라운드에서·어느 직원에게·첫 판단(`initial`) 또는 최종 판단(`final`)을 했는지. 네 값을 함께 고유하게 관리합니다. |
+| `choice` | 참가자가 확정한 `1=배정`, `0=보류`. **미응답은 행이 없거나 별도 NULL**로 구분합니다. |
+| `selected_at` | 해당 직원의 마지막 선택 시각. |
+| `submitted_at` | 12명 판단을 모두 확정한 시각. 첫 판단을 제출한 뒤에는 값이 바뀌지 않습니다. |
+
+한 참가자가 두 라운드를 완료하면 직원 12명 × 첫·최종 판단 2단계 × 2라운드로 **최대 48행**입니다. AURA 판단·정답·FI 값은 참가자 선택과 섞지 않고 `stimulus_sets`에서 읽습니다.
+
+#### 7. `content_views` — 프로필과 유사 사례 열람
+
+| 컬럼 | 뜻과 예시 |
+| --- | --- |
+| `id` (PK), `page_visit_id` (FK), `participant_id` (FK) | 어느 화면 방문에서 누가 자료를 봤는지 연결합니다. |
+| `round_no`, `content_type`, `content_id` | 라운드, `employee`/`case`, 직원 `A03`이나 사례 `AC03` 같은 자료 ID. |
+| `visible_at`, `hidden_at`, `visible_ms` | 카드가 실제 화면에 보이기 시작·끝난 시각과 보인 시간. 단순히 목록에 실린 것과 실제 열람을 구분합니다. |
+
+카드가 몇 초 이상 보여야 열람으로 볼지, 스크롤 중 잠깐 스친 경우를 어떻게 처리할지는 파일럿에서 정합니다. 이 기록만으로 내용을 이해했다고 해석하지 않습니다.
+
+#### 8. `stimulus_sets` — 직원·AI 자료의 고정본
+
+| 컬럼 | 뜻과 예시 |
+| --- | --- |
+| `version` (PK) | 실험 자료 버전. 파일럿 수정과 본 실험 확정본을 구별합니다. |
+| `sha256` | 파일 내용이 바뀌지 않았는지 확인하는 해시값. |
+| `payload` | A/B 직원 특성값, 정답, AURA 추천·FI, 연결된 유사 사례와 해당 사례 값을 담은 고정 JSON. 참가자별로 반복 저장하지 않습니다. |
+| `created_at` | 자료 버전을 등록한 시각. |
 
 > **시간 기록:** 01~14 화면과 로딩 화면을 각각 기록합니다. 다음 화면으로 넘어갈 때 진입·이탈 시각과 소요 시간을 확정하고, 페이지가 열린 동안에는 주기적으로 `last_seen_at`과 보이는 시간을 저장합니다. 숨긴 탭의 시간은 `wall_ms`에만 넣고 `active_ms`에서는 뺍니다. 전체 경과는 시작~완료 시각, 전체 활동 시간은 각 방문의 `active_ms` 합계로 계산합니다. 브라우저가 갑자기 종료되면 마지막 접속 시각까지만 확인할 수 있으므로 미완료 방문으로 구분합니다.
 
@@ -96,7 +196,7 @@ erDiagram
 
 RAIR·RSR·과신/과소의존은 `decisions`의 첫·최종 판단과 버전이 고정된 AURA 판단·정답으로 **분석할 때 계산**합니다. 원자료에는 직원별 응답과 조건부 분모를 다시 계산할 수 있는 자극 버전을 남깁니다. 실제 배정과 저장은 서버에서 한 번만 처리하고, 참가자에게 다른 사람의 행을 읽거나 쓰는 권한을 주지 않습니다.
 
-**참가자 코드 권장안:** 파일럿 `PIL-001`, `PIL-002`… / 본 실험 `MAIN-001`, `MAIN-002`…. DB에는 `phase`도 별도로 저장하고 두 집단을 기본 분석에서 분리합니다. 코드는 공개 화면의 식별자일 뿐 인증 수단으로 단독 사용하지 않고, 대면 진행자가 확인한 참가자에게만 발급합니다. 코드 발급·재발급·중복 입력 규칙은 운영 전 확정합니다.
+**참가자 코드 확정:** 파일럿 `PT-001`, `PT-002`… / 본 실험 `MT-001`, `MT-002`…. DB에는 `phase`도 별도로 저장하고 두 집단을 기본 분석에서 분리합니다. 코드는 공개 화면의 식별자일 뿐 인증 수단으로 단독 사용하지 않고, 대면 진행자가 확인한 참가자에게만 발급합니다. 코드 발급·재발급·중복 입력 규칙은 운영 전 확정합니다.
 
 ### 로컬 연구 문서
 
@@ -104,10 +204,10 @@ RAIR·RSR·과신/과소의존은 `decisions`의 첫·최종 판단과 버전이
 
 ### Supabase·Vercel 연결 순서
 
-1. Supabase에서 AURA용 프로젝트를 만들고 **Connect**에서 Project URL과 Publishable key를 확인합니다. 서버에서만 쓸 Secret key는 별도로 보관하며 채팅·GitHub에 올리지 않습니다.
+1. Supabase에서 조직이 없다면 **Name: `AURA Research` / Type: `Personal` / Plan: `Free`**로 조직을 만들고 그 안에 AURA 프로젝트를 만듭니다. 개인 명의 계정으로 개발하는 현재 단계의 권장값입니다. 학교가 소유·운영하는 조직이라면 Type과 소유 계정은 학교 기준으로 정합니다. Free는 비활성 기간 후 일시 중지될 수 있으므로 본 실험 전 백업·운영 안정성에 맞춰 Pro 전환을 검토합니다. 프로젝트 **Connect**에서 Project URL과 Publishable key를 확인합니다. 서버에서만 쓸 Secret key는 별도로 보관하며 채팅·GitHub에 올리지 않습니다.
 2. Vercel에서 **Add New → Project → Import Git Repository**로 `dev-yeinchoi/AURA`를 가져옵니다. Framework Preset은 Next.js, Root Directory는 저장소 루트입니다. 현재 연결된 Vercel 계정에는 AURA 프로젝트가 아직 보이지 않습니다.
 3. Vercel의 **Project Settings → Environment Variables**에 Supabase URL·Publishable key를 등록합니다. 서버 저장 API를 구현할 때만 Secret key를 서버 전용 변수로 등록합니다. 로컬에서는 `cp .env.example .env.local` 후 같은 키 이름에 값을 넣습니다. 비밀 값은 출력하거나 커밋하지 않습니다. **현재 앱에는 DB 연동 코드가 없어 키만 입력해도 응답은 저장되지 않습니다.**
-4. `aura.yeinchoi.com`을 이 Vercel 프로젝트의 Production 도메인으로 추가하고 Vercel이 안내하는 DNS 레코드를 도메인 관리 서비스에 설정합니다. 기존 `yeinchoi.com` 웹사이트와 이메일 레코드는 유지합니다. 실제 연구 개시 전까지는 Vercel Preview URL에서 검증합니다.
+4. **이미 구입한 `yeinchoi.com`을 사용합니다.** `aura.yeinchoi.com`은 별도 구매가 필요한 새 도메인이 아니라 같은 도메인 아래의 서브도메인입니다. Vercel 프로젝트에 이 주소를 추가하고 안내되는 CNAME을 현재 DNS 관리 서비스에 설정합니다. 기존 `yeinchoi.com` 웹사이트와 이메일 레코드는 유지합니다. 실제 연구 개시 전까지는 Vercel Preview URL에서 검증합니다.
 5. 위 ERD에 맞춰 DB 테이블·접근 제한(RLS/권한)을 만든 다음, 참가자 코드 확인·균형 배정·중간 저장·재접속·연구자 내보내기를 구현하고 파일럿 데이터와 본 실험 데이터를 분리 검증합니다.
 
 GitHub: https://github.com/dev-yeinchoi/AURA.git
