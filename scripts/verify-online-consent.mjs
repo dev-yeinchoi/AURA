@@ -2,6 +2,7 @@ import { createHash, createHmac, randomInt } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
+import { chromium } from "@playwright/test";
 
 const baseUrl = process.env.AURA_TEST_BASE_URL ?? "http://localhost:3001";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -11,11 +12,6 @@ if (!new URL(baseUrl).hostname.match(/^(localhost|127\.0\.0\.1)$/)) {
   throw new Error("온라인 동의 검증은 로컬 앱에서만 실행합니다.");
 }
 const db = createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } });
-const { data: active, error: activeError } = await db.from("study_documents")
-  .select("version").eq("active", true).maybeSingle();
-if (activeError) throw activeError;
-if (active) throw new Error("이미 운영 문서가 활성화되어 있습니다. 검증용 문서로 교체하지 않습니다.");
-
 const documents = await Promise.all([
   ["information", "participant-information.pdf"],
   ["consent", "written-consent.pdf"],
@@ -25,8 +21,15 @@ const documents = await Promise.all([
 }));
 const version = `sha256-${createHash("sha256").update(documents.map(d => d.sha).join(":"))
   .digest("hex").slice(0, 16)}`;
+const { data: active, error: activeError } = await db.from("study_documents")
+  .select("version").eq("active", true).maybeSingle();
+if (activeError) throw activeError;
+if (active && active.version !== version) {
+  throw new Error("활성 운영 문서가 로컬 PDF와 다릅니다. 검증 중에 운영 문서를 교체하지 않습니다.");
+}
 const ids = [];
 let activated = false;
+let browser;
 
 async function issue() {
   const code = `PT-9${randomInt(100000, 999999)}`;
@@ -57,25 +60,27 @@ async function post(path, cookie, body) {
 }
 
 try {
-  for (const document of documents) {
-    const path = `${version}/${document.kind}.pdf`;
-    const { error } = await db.storage.from("study-documents").upload(path, document.bytes,
-      { contentType: "application/pdf", upsert: false });
-    if (error && !error.message.toLowerCase().includes("already exists")) throw error;
+  if (!active) {
+    for (const document of documents) {
+      const path = `${version}/${document.kind}.pdf`;
+      const { error } = await db.storage.from("study-documents").upload(path, document.bytes,
+        { contentType: "application/pdf", upsert: false });
+      if (error && !error.message.toLowerCase().includes("already exists")) throw error;
+    }
+    const { error: activationError } = await db.rpc("activate_study_documents", {
+      p_version: version,
+      p_information_path: `${version}/information.pdf`,
+      p_consent_path: `${version}/consent.pdf`,
+      p_information_sha256: documents[0].sha,
+      p_consent_sha256: documents[1].sha,
+    });
+    if (activationError) throw activationError;
+    activated = true;
   }
-  const { error: activationError } = await db.rpc("activate_study_documents", {
-    p_version: version,
-    p_information_path: `${version}/information.pdf`,
-    p_consent_path: `${version}/consent.pdf`,
-    p_information_sha256: documents[0].sha,
-    p_consent_sha256: documents[1].sha,
-  });
-  if (activationError) throw activationError;
-  activated = true;
 
   const accepted = await issue();
   const study = await fetch(`${baseUrl}/study`, { headers: { Cookie: accepted.cookie } });
-  if (!study.ok || !(await study.text()).includes("연구대상자를 위한 설명문")) {
+  if (!study.ok || !(await study.text()).includes("연구 참여 동의")) {
     throw new Error("Online consent screen missing");
   }
   const pdf = await fetch(`${baseUrl}/api/study-document/information?version=${version}`,
@@ -85,9 +90,17 @@ try {
   }
   const before = await post("/api/pilot/event", accepted.cookie, { stage: "demographics", round: null });
   if (before.status !== 403) throw new Error(`Study opened before consent: ${before.status}`);
-  const accept = await post("/api/pilot/consent", accepted.cookie,
-    { decision: "accepted", documentVersion: version, informationMs: 1200, consentMs: 900 });
-  if (!accept.ok) throw new Error(`Consent acceptance failed: ${accept.status} ${await accept.text()}`);
+  browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext();
+  await context.addCookies([{
+    name: "aura_session", value: accepted.cookie.split("=")[1], url: baseUrl,
+  }]);
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/study`);
+  await page.getByRole("button", { name: "동의하고 참여" }).click();
+  await page.getByRole("heading", { name: "AURA 파일럿" }).waitFor();
+  await browser.close();
+  browser = undefined;
   const after = await post("/api/pilot/event", accepted.cookie, { stage: "demographics", round: null });
   if (!after.ok) throw new Error(`Study stayed closed after consent: ${after.status}`);
 
@@ -107,13 +120,14 @@ try {
   }
   process.stdout.write("Online consent passed: private PDFs, accept/decline, versioned records, study gate.\n");
 } finally {
+  if (browser) await browser.close();
   if (activated) {
     const { error } = await db.from("study_documents").update({ active: false }).eq("version", version);
     if (error) throw error;
   }
   for (const id of ids) {
-    for (const table of ["page_visits", "consent_records", "participant_sessions",
-      "participant_credentials", "participants"]) {
+    for (const table of ["survey_answers", "decisions", "page_visits", "consent_records",
+      "rounds", "assignments", "participant_sessions", "participant_credentials", "participants"]) {
       const { error } = await db.from(table).delete().eq(table === "participants" ? "id" : "participant_id", id);
       if (error) throw new Error(`Synthetic cleanup failed in ${table}: ${error.message}`);
     }

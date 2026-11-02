@@ -17,7 +17,7 @@ html,body{height:100%;overflow:hidden}
 .criteria{min-height:0}
 .document{min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden}
 .document-frame{height:auto;min-height:0;flex:1}
-.online-consent-page{display:flex;flex-direction:column;height:calc(100dvh - 100px);min-height:540px;overflow:hidden}.online-consent-page .screen-heading{min-height:100px}.online-consent-document{display:flex;flex-direction:column;min-height:180px;flex:1;overflow:hidden}.online-consent-page .consent{margin-top:12px;flex-shrink:0}.online-consent-page .navigation{margin-top:12px}
+.consent-entry{max-width:760px;display:flex;flex-direction:column;gap:20px;padding:36px 44px}.consent-links{display:flex;flex-direction:column;gap:12px;padding:20px;border:1px solid var(--line);border-radius:8px;background:var(--page)}.consent-actions{display:flex;gap:14px;flex-wrap:wrap}.consent-actions button{min-width:170px}
 .navigation{min-height:74px;margin-top:12px}
 .complete{margin:auto 0}
 .workspace[data-stage="loading"] .complete{margin:auto 0}

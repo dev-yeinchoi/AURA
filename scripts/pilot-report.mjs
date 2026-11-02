@@ -18,7 +18,8 @@ for (const participant of participants) {
   const total = participant.started_at && participant.completed_at
     ? Math.round((Date.parse(participant.completed_at) - Date.parse(participant.started_at)) / 1000)
     : null;
-  const testLabel = participant.consent_document_version === "SYNTHETIC_TEST_NO_HUMAN_PARTICIPANT"
+  const testLabel = participant.consent_document_version === "SYNTHETIC_TEST_NO_HUMAN_PARTICIPANT" ||
+    /^PT-9\d{6}$/.test(participant.participant_code)
     ? "[합성 테스트] " : "";
   console.log(`\n${testLabel}${participant.participant_code} | ${participant.status} | 전체 ${total === null ? "진행 중" : `${total}초`}`);
   const { data: visits, error: visitError } = await db.from("page_visits")

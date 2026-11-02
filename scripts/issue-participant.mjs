@@ -46,7 +46,9 @@ if (mode === "--reissue") {
   if (listError) throw new Error(`기존 코드 조회 실패: ${listError.message}`);
   const highest = Math.max(
     0,
-    ...existing.map((row) => Number(row.participant_code.split("-")[1])),
+    ...existing
+      .filter((row) => !/^PT-9\d{6}$/.test(row.participant_code))
+      .map((row) => Number(row.participant_code.split("-")[1])),
   );
   code = `${prefix}-${String(highest + 1).padStart(3, "0")}`;
   const { error } = await db.rpc("issue_participant", {
