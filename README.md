@@ -27,10 +27,10 @@ npm run dev
 | 기기 | PC·노트북 브라우저. Figma 기준 1440×900, 좁은 화면은 줄바꿈·스크롤 적용 |
 | 설문 | Figma 원문 수령 및 화면 구현. PPD15/상황 인식4/Trust3/사후 설문 |
 | 실험 흐름 | 두 라운드 전체 화면, 초기·최종 응답 분리, 제출 단계 잠금, 파일럿 서버 배정과 같은 브라우저 이어하기 |
-| 파일럿 운영 | [aura.yeinchoi.com](https://aura.yeinchoi.com) 배포 완료. 코드+PIN, 서면 동의 확인, 서버 조건 배정, 문항별 응답·직원별 판단·화면별/전체 시간·자유 응답 저장을 `/study`에 연결. 본실험 운영은 별도 검증 전 |
-| 연구 문서 | 첨부 설명문·서면 동의서는 로컬 개발 미리보기에만 연결. 공개 저장소·배포에는 포함하지 않음 |
+| 파일럿 운영 | [aura.yeinchoi.com](https://aura.yeinchoi.com)에 코드+PIN, 온라인 동의, 서버 조건 배정, 문항별 응답·직원별 판단·화면별/전체 시간·자유 응답 저장을 연결. 승인본 PDF 등록 후 참가자 사용 가능. 본실험 운영은 별도 검증 전 |
+| 연구 문서 | 승인본 설명문·동의서를 비공개 Supabase Storage에 등록. 공개 저장소·Vercel 배포 파일에는 포함하지 않음 |
 
-> `/preview`는 개발 환경에서만 열리고 입력은 연구 데이터가 아닙니다. `/study`는 **서면 동의를 대면으로 받은 파일럿 참가자**만 코드+PIN으로 사용합니다. 원본 PDF는 배포에 포함하지 않아 앱의 설명문·동의서 화면은 건너뛰며, 앱의 전체 시간은 파일럿 시작 버튼부터 종료까지입니다. 방문·설명·서명 시간까지 포함한 대면 전체 시간은 별도로 재야 합니다.
+> `/preview`는 개발 환경에서만 열리고 입력은 연구 데이터가 아닙니다. `/study`에서는 파일럿 참가자가 코드+PIN으로 로그인한 뒤 승인된 설명문·동의서 PDF를 확인하고 화면에서 참여 여부를 선택합니다. 서버에 수락 기록이 저장되어야 실험이 열립니다. 앱의 과제 전체 시간은 파일럿 시작 버튼부터 종료까지이며, 설명문·동의서의 시간은 `page_visits`에 별도로 남습니다.
 
 ## 최신 연구 결정
 
@@ -96,11 +96,11 @@ cd /Users/yein/Developer/projects/aura
 npm run participant:issue -- pilot
 npm run participant:issue -- main
 npm run participant:issue -- --reissue PT-001
-npm run participant:confirm -- PT-001
+npm run consent:publish
 npm run pilot:report
 ```
 
-위 명령은 **진행자만** 실행합니다. 참가자 코드와 PIN은 터미널에 한 번 표시되므로 대면 전달하고 채팅·GitHub에 올리지 않습니다. 파일럿에서는 먼저 대면으로 설명하고 서면 동의를 받은 뒤 `participant:issue -- pilot`로 코드와 PIN을 발급하고, **실제 서명을 확인한 경우에만** `participant:confirm`을 실행합니다. 참가자는 `/`에서 로그인하고 `/study`를 시작합니다. `pilot:report`는 파일럿 코드별 앱 전체 시간·화면별 시간·자유 응답을 터미널에 보여줍니다. 본실험용 `main` 발급은 아직 운영하지 않습니다.
+위 명령은 **진행자만** 실행합니다. `consent:publish`는 승인된 최종 PDF 두 파일을 로컬 지정 위치에 넣은 뒤 **한 번** 실행합니다. 참가자 코드와 PIN은 터미널에 한 번 표시되므로 대면 전달하고 채팅·GitHub에 올리지 않습니다. 참가자는 `/`에서 로그인한 뒤 `/study`의 PDF와 전자 동의 화면을 거쳐 실험을 시작합니다. 기존 `participant:confirm`은 예전 서면 동의 절차용이므로 온라인 동의 운영에 사용하지 않습니다. `pilot:report`는 파일럿 코드별 앱 전체 시간·화면별 시간·자유 응답을 터미널에 보여줍니다. 본실험용 `main` 발급은 아직 운영하지 않습니다.
 
 ### 실제 운영 데이터 설계 초안 (ERD)
 
@@ -114,6 +114,8 @@ erDiagram
   participants ||--o{ participant_sessions : 세션
   participants ||--o{ rounds : 수행
   participants ||--o{ page_visits : 방문
+  participants ||--o| consent_records : 동의선택
+  study_documents ||--o{ consent_records : 확인한문서
   participants ||--o{ survey_answers : 응답
   participants ||--o{ decisions : 판단
   stimulus_sets ||--o{ assignments : 사용
@@ -126,7 +128,9 @@ erDiagram
 | 테이블 | 한 행의 의미 | 주요 저장 항목 |
 | --- | --- | --- |
 | `private.recruitment_applications` | 모집 신청 1건 | 연락처·생년월일(필요한 경우)·예약 일시·신청 상태·선택적 참가자 연결. 연구 응답과 접근 권한을 분리 |
-| `participants` | 참가자 1명 | 내부 UUID, 표시 코드, `pilot/main` 구분, 진행 상태, 서면 동의 확인 여부·문서 버전·확인 시각, 시작·완료 시각 |
+| `participants` | 참가자 1명 | 내부 UUID, 표시 코드, `pilot/main` 구분, 진행 상태, 온라인 동의 시각·문서 버전, 시작·완료 시각 |
+| `study_documents` | 동의 문서 버전 1개 | 비공개 PDF 경로·각 PDF의 SHA-256 해시·현재 사용 여부 |
+| `consent_records` | 참가자의 참여 선택 1건 | 수락/거절, 문서 버전·해시, 선택 시각, 설명문·동의서 경과시간 |
 | `participant_credentials` | 참가자별 현재 PIN 1개 | PIN 해시·만료·사용 시각·실패 횟수·잠금 시각. 원문 PIN은 저장하지 않음 |
 | `participant_sessions` | 로그인 세션 1개 | 임의 토큰의 해시·참가자·만료·취소 시각. 쿠키 원문은 저장하지 않음 |
 | `assignments` | 참가자별 1회 배정 | Authority Low/High, Explanation None/FI/Case, 네 가지 라운드 순서 중 하나, 자극 자료 버전, 배정 시각 |
@@ -146,8 +150,9 @@ erDiagram
 | `participant_code` (고유) | 참가자가 입력하는 코드. 파일럿 `PT-001`, 본 실험 `MT-001`처럼 중복 없이 발급합니다. |
 | `phase` | `pilot` 또는 `main`. 코드 앞글자와 별도로 저장해 파일럿 자료를 분석에서 확실히 분리합니다. |
 | `status` | 발급됨·진행 중·완료·중단·참여 거절 중 현재 상태. 재접속과 완료 여부 판단에 사용합니다. |
-| `consent_document_version` | 실제 대면 서면 동의서의 승인본 버전. 어떤 문서로 동의를 받았는지 남깁니다. |
-| `paper_consent_confirmed_at` | 진행자가 서면 동의를 확인한 시각. 미리보기 화면의 라디오 클릭으로 채우지 않습니다. |
+| `consent_document_version` | 참가자가 화면에서 확인한 승인본 PDF 두 파일의 해시로 만든 버전. |
+| `online_consent_confirmed_at` | 참가자가 화면에서 참여에 동의한 시각. 거절하면 비어 있습니다. |
+| `paper_consent_confirmed_at` | 이전 서면 동의 방식의 기록용 컬럼. 온라인 동의 시작 조건에는 쓰지 않습니다. |
 | `started_at`, `completed_at` | 실험 시작·완료 시각. 둘의 차이는 전체 **경과 시간**이며, 중도 종료면 `completed_at`은 비어 있습니다. |
 | `created_at` | 코드가 발급되어 행이 생성된 시각. |
 
@@ -254,7 +259,7 @@ erDiagram
 | 화면 | 저장할 내용 |
 | --- | --- |
 | 01 참가자 번호 | 코드+PIN 확인과 세션 발급. 이름·전화번호는 실험 응답과 함께 저장하지 않음 |
-| 02 설명문·03 동의서 | 각각의 방문 시간, 서면 동의 확인 기록과 문서 버전. 미리보기 라디오 선택은 실제 서명이 아님 |
+| 02 설명문·03 동의서 | 각 화면의 경과시간, 승인 PDF 해시·버전, 수락/거절 선택 및 시각. 운영 화면의 선택은 실제 온라인 동의 기록 |
 | 04 기본 정보·05 사전 설문 | 성별·학력·AI 사용 경험, PPD 15문항. 나이는 현재 화면에 없음 |
 | 06 상황 설명·07 상황 인식 | 시나리오 Risk·직원 묶음, 네 가지 상황 인식 응답, 화면별 시간 |
 | 08 직원 열람·09 첫 판단 | 열람 시간, 직원 12명에 대한 첫 배정/보류 응답과 확정 시각 |
@@ -267,23 +272,23 @@ RAIR·RSR·과신/과소의존은 `decisions`의 첫·최종 판단과 버전이
 
 ### 로컬 연구 문서
 
-첨부받은 PDF는 `data/private/documents/participant-information.pdf`와 `data/private/documents/written-consent.pdf`에 복사했습니다. 이 폴더는 Git에서 제외됩니다. 다른 컴퓨터에서 실행할 때는 해당 파일을 직접 복사해야 문서가 표시됩니다. PDF는 개발용 `/api/preview-document/information` 및 `/api/preview-document/consent`에서 `localhost`로 접속한 경우에만 제공됩니다. 설명문의 모집 인원 `000명`을 확정하고, 승인된 최종본을 받기 전에는 운영 화면에 게시하지 마세요.
+연구자가 승인된 최종 PDF 두 파일을 `data/private/documents/participant-information.pdf`와 `data/private/documents/written-consent.pdf`에 넣습니다. 두 파일을 **모두 교체한 뒤** `npm run consent:publish`를 실행합니다. 명령은 PDF를 비공개 Supabase Storage에 올리고, 파일별 해시로 버전을 만들고, 현재 운영 문서로 활성화합니다. 이 폴더는 Git에서 제외되며 PDF는 Vercel 배포 파일에 포함되지 않습니다. 현재 로컬 파일은 작업용 초안이므로 최종본으로 교체하기 전에는 이 명령을 실행하지 않습니다. 개발용 `/preview` PDF는 로컬에서만 제공됩니다.
 
 ### Supabase·Vercel 연결 상태
 
-- Supabase `aura-research`에 DB·PIN 마이그레이션을 적용했습니다. 로컬 `.env.local`과 Vercel Production·Preview에 필요한 세 환경 변수를 등록했고, 서버 전용 키는 Git에 넣지 않았습니다.
+- Supabase `aura-research`에 DB·PIN·온라인 동의 마이그레이션을 적용했습니다. 로컬 `.env.local`과 Vercel Production·Preview에 필요한 세 환경 변수를 등록했고, 서버 전용 키는 Git에 넣지 않았습니다.
 - GitHub `dev-yeinchoi/AURA`를 Vercel `aura-research` 프로젝트에 연결해 배포했습니다.
 - 기존 `yeinchoi.com`의 서브도메인 `aura.yeinchoi.com`을 Cloudflare의 `aura` CNAME과 소유권 확인 TXT로 연결했습니다. Vercel 도메인 검증은 통과했고 공개 HTTPS 응답은 `200`입니다. 새 DNS가 일부 통신사 캐시에 전파되기까지는 시간이 걸릴 수 있습니다.
-- 실제 배포에서 임시 파일럿 참가자의 로그인→두 라운드→설문·판단·시간·자유 응답 저장을 검증했습니다. 임시 데이터는 검증 뒤 삭제했습니다. 파일럿 자료는 `phase = pilot`로 본실험과 분리합니다.
+- 합성 참가자로 온라인 동의 수락·거절, PDF 해시, 실험 진입 제한과 두 라운드의 설문·판단·시간·자유 응답 저장을 검증했습니다. 임시 참가자·동의 기록과 검증용 활성 문서는 검증 뒤 정리했습니다. 파일럿 자료는 `phase = pilot`로 본실험과 분리합니다.
 
 ### 파일럿 당일 순서
 
 1. Supabase Table Editor의 `private.recruitment_applications`에 두 분의 모집 정보와 예약 시각을 연구자가 직접 입력합니다. 모집 정보는 앱 응답과 분리합니다.
-2. 대면 설명과 서면 동의를 마친 뒤 진행자 터미널에서 `npm run participant:issue -- pilot`로 참가자 코드·15분 유효 PIN을 발급합니다. 실제 서명을 확인하고 `npm run participant:confirm -- PT-001`처럼 해당 코드를 확인 처리합니다.
-3. 참가자는 [aura.yeinchoi.com](https://aura.yeinchoi.com)에서 코드와 PIN을 입력하고 실험을 시작합니다. 각 참가자의 PIN은 참여 직전에 발급합니다.
+2. 승인된 최종 PDF 두 파일을 위 위치에 넣고 `npm run consent:publish`로 등록합니다. 참가자 도착 직전에 `npm run participant:issue -- pilot`로 코드·15분 유효 PIN을 발급합니다.
+3. 참가자는 [aura.yeinchoi.com](https://aura.yeinchoi.com)에서 코드와 PIN을 입력하고 설명문·동의서를 확인한 다음 참여 여부를 선택합니다. 수락이 DB에 저장된 뒤 과제를 시작할 수 있습니다.
 4. 종료 후 진행자는 `npm run pilot:report`로 앱 전체 시간·화면별 시간·자유 응답을 확인합니다. 설문 문항별 원응답과 직원별 첫·최종 판단은 Supabase의 `survey_answers`와 `decisions`에 저장됩니다.
 
-`PT-000`은 배포 저장을 확인하기 위한 **합성 테스트 자료**입니다. 실제 참가자나 파일럿 분석에 포함하지 않습니다. `participants.consent_document_version`에 `SYNTHETIC_TEST_NO_HUMAN_PARTICIPANT`가 표시되고 서면 동의 확인 시각은 비어 있습니다. `pilot:report`에서도 `[합성 테스트]`로 구분합니다.
+`PT-000`은 이전 배포 저장을 확인하기 위한 **합성 테스트 자료**입니다. 실제 참가자나 파일럿 분석에 포함하지 않습니다. `participants.consent_document_version`에 `SYNTHETIC_TEST_NO_HUMAN_PARTICIPANT`가 표시되고 온라인 동의 기록은 없습니다. `pilot:report`에서도 `[합성 테스트]`로 구분합니다.
 
 본실험의 분석·제외 기준, 다른 브라우저 재접속, 운영용 내보내기는 별도로 검증합니다. Free 플랜은 비활성 기간 후 일시 중지될 수 있으므로 본실험 전 백업·운영 안정성을 다시 점검합니다.
 

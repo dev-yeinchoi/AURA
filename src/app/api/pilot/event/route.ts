@@ -55,11 +55,11 @@ export async function POST(request: Request) {
     }
     const db = createSupabaseAdmin();
     const { data: participant, error: participantError } = await db.from("participants")
-      .select("paper_consent_confirmed_at, status, started_at")
+      .select("online_consent_confirmed_at, status, started_at")
       .eq("id", session.id).single();
     if (participantError) throw participantError;
-    if (!participant.paper_consent_confirmed_at || ["declined", "stopped", "completed"].includes(participant.status)) {
-      return NextResponse.json({ error: "진행자의 서면 동의 확인이 필요합니다." }, { status: 403 });
+    if (!participant.online_consent_confirmed_at || ["declined", "stopped", "completed"].includes(participant.status)) {
+      return NextResponse.json({ error: "온라인 동의가 필요합니다." }, { status: 403 });
     }
     const now = new Date();
 

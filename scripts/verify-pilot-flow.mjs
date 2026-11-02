@@ -58,7 +58,7 @@ try {
   participantId = issued.data;
   const consent = await db.from("participants")
     .update({
-      paper_consent_confirmed_at: new Date().toISOString(),
+      online_consent_confirmed_at: new Date().toISOString(),
       consent_document_version: "SYNTHETIC_TEST_NO_HUMAN_PARTICIPANT",
     })
     .eq("id", participantId);
@@ -129,7 +129,7 @@ try {
   if (browser) await browser.close();
   if (participantId && keepTestData && passed) {
     const clearConsent = await db.from("participants")
-      .update({ paper_consent_confirmed_at: null })
+      .update({ online_consent_confirmed_at: null })
       .eq("id", participantId);
     if (clearConsent.error) throw clearConsent.error;
     for (const table of ["participant_sessions", "participant_credentials"]) {

@@ -111,6 +111,54 @@ export type Database = {
           },
         ]
       }
+      consent_records: {
+        Row: {
+          consent_ms: number
+          consent_sha256: string
+          decided_at: string
+          decision: string
+          document_version: string
+          information_ms: number
+          information_sha256: string
+          participant_id: string
+        }
+        Insert: {
+          consent_ms: number
+          consent_sha256: string
+          decided_at?: string
+          decision: string
+          document_version: string
+          information_ms: number
+          information_sha256: string
+          participant_id: string
+        }
+        Update: {
+          consent_ms?: number
+          consent_sha256?: string
+          decided_at?: string
+          decision?: string
+          document_version?: string
+          information_ms?: number
+          information_sha256?: string
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_records_document_version_fkey"
+            columns: ["document_version"]
+            isOneToOne: false
+            referencedRelation: "study_documents"
+            referencedColumns: ["version"]
+          },
+          {
+            foreignKeyName: "consent_records_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: true
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       decisions: {
         Row: {
           choice: number
@@ -279,6 +327,7 @@ export type Database = {
           consent_document_version: string | null
           created_at: string
           id: string
+          online_consent_confirmed_at: string | null
           paper_consent_confirmed_at: string | null
           participant_code: string
           phase: string
@@ -290,6 +339,7 @@ export type Database = {
           consent_document_version?: string | null
           created_at?: string
           id?: string
+          online_consent_confirmed_at?: string | null
           paper_consent_confirmed_at?: string | null
           participant_code: string
           phase: string
@@ -301,6 +351,7 @@ export type Database = {
           consent_document_version?: string | null
           created_at?: string
           id?: string
+          online_consent_confirmed_at?: string | null
           paper_consent_confirmed_at?: string | null
           participant_code?: string
           phase?: string
@@ -365,6 +416,36 @@ export type Database = {
         }
         Relationships: []
       }
+      study_documents: {
+        Row: {
+          active: boolean
+          consent_path: string
+          consent_sha256: string
+          created_at: string
+          information_path: string
+          information_sha256: string
+          version: string
+        }
+        Insert: {
+          active?: boolean
+          consent_path: string
+          consent_sha256: string
+          created_at?: string
+          information_path: string
+          information_sha256: string
+          version: string
+        }
+        Update: {
+          active?: boolean
+          consent_path?: string
+          consent_sha256?: string
+          created_at?: string
+          information_path?: string
+          information_sha256?: string
+          version?: string
+        }
+        Relationships: []
+      }
       survey_answers: {
         Row: {
           answer_number: number | null
@@ -424,6 +505,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_study_documents: {
+        Args: {
+          p_consent_path: string
+          p_consent_sha256: string
+          p_information_path: string
+          p_information_sha256: string
+          p_version: string
+        }
+        Returns: undefined
+      }
       issue_participant: {
         Args: {
           p_code: string
@@ -432,6 +523,16 @@ export type Database = {
           p_pin_digest: string
         }
         Returns: string
+      }
+      record_online_consent: {
+        Args: {
+          p_consent_ms: number
+          p_decision: string
+          p_document_version: string
+          p_information_ms: number
+          p_participant_id: string
+        }
+        Returns: undefined
       }
       redeem_participant_pin: {
         Args: { p_code: string; p_pin_digest: string }
