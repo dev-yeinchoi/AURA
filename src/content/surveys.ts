@@ -6,7 +6,7 @@ export const five=["전혀 동의하지 않음","동의하지 않음","보통","
 export const seven=["전혀 동의하지 않음","동의하지 않음","약간 동의하지 않음","보통","약간 동의함","동의함","매우 동의함"];
 const numbered=(frame:string,options:string[]):Question[]=>byFrame(frame).filter(t=>/^\d+\./.test(t.text)).map(t=>({...t,options}));
 export const ppd=numbered("383:68",five);
-export const ncsOptions=["1점 · 전혀 나와 같지 않다","2점 · 별로 나와 같지 않다","3점 · 보통이다","4점 · 조금 나와 같다","5점 · 매우 나와 같다"];
+export const ncsOptions=["1점 · 전혀 나와 같지 않다","2점","3점","4점","5점 · 매우 나와 같다"];
 export const ncs:Question[]=[
   "나는 단순한 문제보다 복잡한 문제를 선호한다.",
   "나는 많은 생각이 필요한 상황을 책임지고 해결하는 것을 좋아한다.",
