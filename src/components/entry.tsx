@@ -44,9 +44,9 @@ export default function Entry(){
   return <main className="entry">
     <form className="panel entry-card" onSubmit={verify}>
       <p className="eyebrow">STEP 01</p><h1>AURA 연구 참여 안내</h1>
-      <p className="muted">전달받은 참가자 번호와 휴대전화 번호 뒤 4자리를 입력해 주세요. DM-001~DM-006은 데모 계정입니다.</p><hr/>
+      <p className="muted">전달받은 참가자 번호와 휴대전화 번호 뒤 4자리를 입력해 주세요.</p><hr/>
       <label htmlFor="participant-id">참가자 번호</label>
-      <div className="entry-input"><input id="participant-id" value={code} onChange={e=>{setCode(e.target.value);setIdentity(null);}} placeholder="예: PT-001 또는 DM-001" autoComplete="off" maxLength={40} disabled={Boolean(verifiedCode)}/></div>
+      <div className="entry-input"><input id="participant-id" value={code} onChange={e=>{setCode(e.target.value);setIdentity(null);}} placeholder="MT-001" autoComplete="off" maxLength={40} disabled={Boolean(verifiedCode)}/></div>
       {!demo&&!verifiedCode&&!identity&&<><label htmlFor="participant-last4">휴대전화 번호 뒤 4자리</label><div className="entry-input"><input id="participant-last4" value={last4} onChange={e=>setLast4(e.target.value.replace(/\D/g,""))} placeholder="뒤 4자리" type="text" inputMode="numeric" autoComplete="off" maxLength={4}/><button type="submit" disabled={busy}>{busy?"확인 중":"정보 확인"}</button></div></>}
       {demo&&!verifiedCode&&<button type="submit" disabled={busy}>{demo.group} 데모 열기</button>}
       {identity&&<div className="identity-confirm" role="status"><h2>본인 정보 확인</h2><p>이름: <strong>{identity.maskedName}</strong></p><p>휴대전화: <strong>{identity.maskedPhone}</strong></p><button type="button" disabled={busy} onClick={confirmIdentity}>확인, 본인 정보가 맞습니다</button><button type="button" className="secondary" disabled={busy} onClick={()=>setIdentity(null)}>다시 입력</button></div>}
@@ -54,7 +54,6 @@ export default function Entry(){
       {message&&<p role="alert" className="error">{message}</p>}
     </form>
     <button className="start" disabled={!verifiedCode||busy} onClick={()=>location.assign("/study")}>실험 시작</button>
-    <a className="preview-link" href="/demo">화면 데모 보기</a>
     {process.env.NODE_ENV==="development"&&<a className="preview-link" href="/preview">개발용 미리보기 열기</a>}
   </main>;
 }

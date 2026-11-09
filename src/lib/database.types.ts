@@ -70,9 +70,27 @@ export type Database = {
   public: {
     Tables: {
       case_expansion_events: {
-        Row: { id: string; participant_id: string; round_no: number; employee_id: string; expanded: boolean; changed_at: string }
-        Insert: { id?: string; participant_id: string; round_no: number; employee_id: string; expanded: boolean; changed_at?: string }
-        Update: { id?: string; participant_id?: string; round_no?: number; employee_id?: string; expanded?: boolean; changed_at?: string }
+        Row: { id: string; participant_id: string; round_no: number; round_id: string; risk_level: string; employee_id: string; expanded: boolean; changed_at: string; event_key: string | null; origin: string; open_duration_ms: number | null }
+        Insert: { id?: string; participant_id: string; round_no: number; round_id: string; risk_level: string; employee_id: string; expanded: boolean; changed_at?: string; event_key?: string | null; origin?: string; open_duration_ms?: number | null }
+        Update: { id?: string; participant_id?: string; round_no?: number; round_id?: string; risk_level?: string; employee_id?: string; expanded?: boolean; changed_at?: string; event_key?: string | null; origin?: string; open_duration_ms?: number | null }
+        Relationships: []
+      }
+      attention_check_responses: {
+        Row: { participant_id: string; round_no: number; round_id: string; risk_level: string; selected_option: number; correct_option: number; is_correct: boolean; response_ms: number | null; submitted_at: string }
+        Insert: { participant_id: string; round_no: number; round_id: string; risk_level: string; selected_option: number; correct_option: number; is_correct: boolean; response_ms?: number | null; submitted_at?: string }
+        Update: { participant_id?: string; round_no?: number; round_id?: string; risk_level?: string; selected_option?: number; correct_option?: number; is_correct?: boolean; response_ms?: number | null; submitted_at?: string }
+        Relationships: []
+      }
+      scenario_segment_visits: {
+        Row: { id: string; participant_id: string; round_no: number; round_id: string; risk_level: string; segment_no: number; entered_at: string; left_at: string | null; wall_ms: number | null; exit_reason: string | null }
+        Insert: { id?: string; participant_id: string; round_no: number; round_id: string; risk_level: string; segment_no: number; entered_at?: string; left_at?: string | null; wall_ms?: number | null; exit_reason?: string | null }
+        Update: { id?: string; participant_id?: string; round_no?: number; round_id?: string; risk_level?: string; segment_no?: number; entered_at?: string; left_at?: string | null; wall_ms?: number | null; exit_reason?: string | null }
+        Relationships: []
+      }
+      case_expansion_summary: {
+        Row: { participant_id: string; round_no: number; round_id: string; risk_level: string; employee_id: string; first_viewed_at: string | null; view_count: number; final_expanded: boolean; open_started_at: string | null; accumulated_open_ms: number; updated_at: string }
+        Insert: { participant_id: string; round_no: number; round_id: string; risk_level: string; employee_id: string; first_viewed_at?: string | null; view_count?: number; final_expanded?: boolean; open_started_at?: string | null; accumulated_open_ms?: number; updated_at?: string }
+        Update: { participant_id?: string; round_no?: number; round_id?: string; risk_level?: string; employee_id?: string; first_viewed_at?: string | null; view_count?: number; final_expanded?: boolean; open_started_at?: string | null; accumulated_open_ms?: number; updated_at?: string }
         Relationships: []
       }
       assignments: {
@@ -382,6 +400,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           form_code: string
+          id: string
           participant_id: string
           risk_level: string
           round_no: number
@@ -390,6 +409,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           form_code: string
+          id?: string
           participant_id: string
           risk_level: string
           round_no: number
@@ -398,6 +418,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           form_code?: string
+          id?: string
           participant_id?: string
           risk_level?: string
           round_no?: number
@@ -523,6 +544,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      record_scenario_segment: {
+        Args: { p_participant_id: string; p_round_no: number; p_segment_no: number | null; p_exit_reason?: string }
+        Returns: undefined
+      }
+      record_case_expansion: {
+        Args: { p_participant_id: string; p_round_no: number; p_employee_id: string; p_expanded: boolean; p_event_key?: string | null }
+        Returns: Database["public"]["Tables"]["case_expansion_summary"]["Row"]
+      }
+      close_open_case_expansions: {
+        Args: { p_participant_id: string; p_round_no: number; p_origin?: string }
+        Returns: number
+      }
       verify_participant_identity: {
         Args: { p_code: string; p_phone_last4: string }
         Returns: { participantId: string; participantCode: string; maskedName: string; maskedPhone: string } | null

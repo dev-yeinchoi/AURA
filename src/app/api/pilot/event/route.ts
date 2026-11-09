@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { attention, checks, demographics, ncs, ppd, riskQuestions, trust, usability } from "@/content/surveys";
+import { attention, attentionCorrectAnswer, checks, demographics, ncs, ppd, riskQuestions, trust, usability } from "@/content/surveys";
 import { stages, type Stage } from "@/lib/preview-state";
 import { getParticipantSession } from "@/lib/participant-session";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
@@ -9,6 +9,7 @@ export const runtime = "nodejs";
 type EventBody = {
   stage: Stage;
   round: number | null;
+  scenarioSegment?: 1 | 2;
   previousStage?: Stage;
   previousRound?: number | null;
   answers?: Record<string, number | string>;
@@ -41,8 +42,7 @@ function validAnswer(stage: Stage, key: string, value: unknown) {
     value >= 1 && value <= question.options.length;
   if (stage === "post" && key === "accuracy") return typeof value === "number" &&
     Number.isInteger(value) && value >= 0 && value <= 100 && value % 5 === 0;
-  if (stage === "post" && key === "comments") return typeof value === "string" &&
-    value.trim().length > 0 && value.length <= 5000;
+  if (stage === "post" && key === "comments") return typeof value === "string" && value.length <= 5000;
   return false;
 }
 
@@ -61,10 +61,38 @@ export async function POST(request: Request) {
       .select("online_consent_confirmed_at, status, started_at")
       .eq("id", session.id).single();
     if (participantError) throw participantError;
+    if (participant.status === "completed" && body.stage === "done") {
+      return NextResponse.json({ ok: true, visitId: null }, { headers: { "Cache-Control": "no-store" } });
+    }
     if (!participant.online_consent_confirmed_at || ["declined", "stopped", "completed"].includes(participant.status)) {
       return NextResponse.json({ error: "온라인 동의가 필요합니다." }, { status: 403 });
     }
+    if (body.previousStage && ["demographics", "ppd", "ncs", "attention", "risk", "trust", "post"].includes(body.previousStage) && !body.answers) {
+      return NextResponse.json({ error: "설문 응답이 누락되었습니다." }, { status: 400 });
+    }
+    if (body.previousStage && ["initial", "final"].includes(body.previousStage) && !body.decisions) {
+      return NextResponse.json({ error: "직원 판단이 누락되었습니다." }, { status: 400 });
+    }
+    if (body.previousStage) {
+      const expectedStage = body.previousStage === "trust" && body.previousRound === 1
+        ? "scenario" : pilotStages[pilotStages.indexOf(body.previousStage) + 1];
+      const expectedRound = body.previousStage === "ncs" ? 1
+        : body.previousStage === "trust" && body.previousRound === 1 ? 2 : body.previousRound;
+      if (body.stage !== expectedStage || (!["post", "done", "demographics", "ppd", "ncs"].includes(body.stage)
+          && body.round !== expectedRound)) {
+        return NextResponse.json({ error: "화면 순서가 올바르지 않습니다." }, { status: 409 });
+      }
+    }
     const now = new Date();
+    const { data: openVisit, error: visitError } = await db.from("page_visits")
+      .select("id, page_key, round_no, entered_at")
+      .eq("participant_id", session.id).is("left_at", null)
+      .order("entered_at", { ascending: false }).limit(1).maybeSingle();
+    if (visitError) throw visitError;
+    if (body.previousStage && openVisit &&
+        (openVisit.page_key !== body.previousStage || openVisit.round_no !== (body.previousRound ?? null))) {
+      return NextResponse.json({ error: "현재 진행 중인 화면과 제출 화면이 다릅니다. 새로고침 후 다시 시도해 주세요." }, { status: 409 });
+    }
 
     if (!participant.started_at) {
       const { error } = await db.from("participants").update({
@@ -74,17 +102,24 @@ export async function POST(request: Request) {
     }
 
     if (body.previousStage && body.answers) {
+      if (body.previousStage === "attention" && (body.previousRound === 1 || body.previousRound === 2)) {
+        const { data: submitted, error: submittedError } = await db.from("attention_check_responses")
+          .select("selected_option").eq("participant_id", session.id)
+          .eq("round_no", body.previousRound).maybeSingle();
+        if (submittedError) throw submittedError;
+        if (submitted && submitted.selected_option !== body.answers.task) {
+          return NextResponse.json({ error: "이미 제출한 이해도 응답은 수정할 수 없습니다." }, { status: 409 });
+        }
+      }
       const required = body.previousStage === "demographics" ? demographics :
         body.previousStage === "ppd" ? ppd : body.previousStage === "ncs" ? ncs :
         body.previousStage === "attention" ? [attention.low] : body.previousStage === "risk" ? riskQuestions :
         body.previousStage === "trust" ? trust : body.previousStage === "post" ? [...checks, ...usability] : [];
       if (required.some(question => !validAnswer(body.previousStage!, question.id, body.answers![question.id])) ||
-          (body.previousStage === "post" &&
-            (!validAnswer("post", "accuracy", body.answers.accuracy) ||
-             !validAnswer("post", "comments", body.answers.comments)))) {
+          (body.previousStage === "post" && !validAnswer("post", "accuracy", body.answers.accuracy))) {
         return NextResponse.json({ error: "모든 문항에 응답해 주세요." }, { status: 400 });
       }
-      const entries = Object.entries(body.answers);
+      const entries = Object.entries(body.previousStage === "post" ? { ...body.answers, comments: body.answers.comments ?? "" } : body.answers);
       for (const [key, value] of entries) {
         const instrument = instrumentFor(body.previousStage, key);
         if (!instrument) continue;
@@ -129,20 +164,71 @@ export async function POST(request: Request) {
           selected_at: now.toISOString(), submitted_at: now.toISOString(),
         }));
       if (rows.length !== 12) return NextResponse.json({ error: "12명의 판단이 필요합니다." }, { status: 400 });
-      const { error } = await db.from("decisions").upsert(rows,
-        { onConflict: "participant_id,round_no,employee_id,stage" });
-      if (error) throw error;
+      const { data: existingDecisions, error: decisionReadError } = await db.from("decisions")
+        .select("employee_id,choice").eq("participant_id", session.id)
+        .eq("round_no", body.previousRound).eq("stage", body.previousStage);
+      if (decisionReadError) throw decisionReadError;
+      if (existingDecisions.length === 12) {
+        const existingChoices = new Map(existingDecisions.map(row => [row.employee_id, row.choice]));
+        if (rows.some(row => existingChoices.get(row.employee_id) !== row.choice)) {
+          return NextResponse.json({ error: "이미 제출한 직원 판단은 수정할 수 없습니다." }, { status: 409 });
+        }
+      } else {
+        const { error } = await db.from("decisions").upsert(rows,
+          { onConflict: "participant_id,round_no,employee_id,stage" });
+        if (error) throw error;
+      }
     }
 
-    const { data: openVisit, error: visitError } = await db.from("page_visits")
-      .select("id, page_key, round_no, entered_at")
-      .eq("participant_id", session.id).is("left_at", null)
-      .order("entered_at", { ascending: false }).limit(1).maybeSingle();
-    if (visitError) throw visitError;
+    if (body.previousStage === "attention" && (body.previousRound === 1 || body.previousRound === 2)) {
+      const selectedOption = Number(body.answers?.task);
+      const { data: round, error: roundError } = await db.from("rounds")
+        .select("id,risk_level").eq("participant_id", session.id)
+        .eq("round_no", body.previousRound).single();
+      if (roundError) throw roundError;
+      const correctOption = attentionCorrectAnswer[round.risk_level as "low" | "high"];
+      const { data: earlierVisits, error: earlierVisitError } = await db.from("page_visits")
+        .select("wall_ms").eq("participant_id", session.id)
+        .eq("round_no", body.previousRound).eq("page_key", "attention")
+        .not("left_at", "is", null);
+      if (earlierVisitError) throw earlierVisitError;
+      const responseMs = earlierVisits.reduce((sum, visit) => sum + (visit.wall_ms ?? 0), 0) +
+        (openVisit?.page_key === "attention" && openVisit.round_no === body.previousRound
+          ? Math.max(0, now.getTime() - Date.parse(openVisit.entered_at)) : 0);
+      const { error } = await db.from("attention_check_responses").upsert({
+        participant_id: session.id, round_no: body.previousRound, round_id: round.id,
+        risk_level: round.risk_level, selected_option: selectedOption,
+        correct_option: correctOption, is_correct: selectedOption === correctOption,
+        response_ms: responseMs, submitted_at: now.toISOString(),
+      }, { onConflict: "participant_id,round_no", ignoreDuplicates: true });
+      if (error) throw error;
+    }
     if (openVisit && openVisit.page_key === body.stage && openVisit.round_no === body.round) {
-      return NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
+      if (body.stage === "scenario" && (body.round === 1 || body.round === 2)) {
+        const { error } = await db.rpc("record_scenario_segment", {
+          p_participant_id: session.id, p_round_no: body.round,
+          p_segment_no: body.scenarioSegment === 2 ? 2 : 1,
+          p_exit_reason: "resume",
+        });
+        if (error) throw error;
+      }
+      return NextResponse.json({ ok: true, visitId: openVisit.id }, { headers: { "Cache-Control": "no-store" } });
     }
     if (openVisit) {
+      if (openVisit.page_key === "scenario" && (openVisit.round_no === 1 || openVisit.round_no === 2)) {
+        const { error } = await db.rpc("record_scenario_segment", {
+          p_participant_id: session.id, p_round_no: openVisit.round_no,
+          p_segment_no: null, p_exit_reason: "next",
+        });
+        if (error) throw error;
+      }
+      if (openVisit.page_key === "advice" && (openVisit.round_no === 1 || openVisit.round_no === 2)) {
+        const { error } = await db.rpc("close_open_case_expansions", {
+          p_participant_id: session.id, p_round_no: openVisit.round_no,
+          p_origin: "navigation",
+        });
+        if (error) throw error;
+      }
       const wallMs = Math.max(0, now.getTime() - Date.parse(openVisit.entered_at));
       const { error } = await db.from("page_visits").update({
         left_at: now.toISOString(), last_seen_at: now.toISOString(),
@@ -166,19 +252,29 @@ export async function POST(request: Request) {
         if (error) throw error;
       }
     }
+    let visitId: string | null = null;
     if (body.stage === "done") {
       const { error } = await db.from("participants").update({
         completed_at: now.toISOString(), status: "completed",
       }).eq("id", session.id);
       if (error) throw error;
     } else {
-      const { error } = await db.from("page_visits").insert({
+      const { data: insertedVisit, error } = await db.from("page_visits").insert({
         participant_id: session.id, round_no: body.round,
         page_key: body.stage,
-      });
+      }).select("id").single();
       if (error) throw error;
+      visitId = insertedVisit.id;
+      if (body.stage === "scenario" && (body.round === 1 || body.round === 2)) {
+        const { error: segmentError } = await db.rpc("record_scenario_segment", {
+          p_participant_id: session.id, p_round_no: body.round,
+          p_segment_no: body.scenarioSegment === 2 ? 2 : 1,
+          p_exit_reason: "entry",
+        });
+        if (segmentError) throw segmentError;
+      }
     }
-    return NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ ok: true, visitId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Pilot event storage failed", error);
     return NextResponse.json({ error: "응답을 저장하지 못했습니다. 진행자에게 문의해 주세요." }, { status: 503 });

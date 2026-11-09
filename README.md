@@ -36,6 +36,9 @@ npm run dev
 ## 최신 연구 결정
 
 - 2026-11-09 추가: 사전 설문 제목은 `사전 설문(1)`/`사전 설문(2)`입니다. 시나리오·AI 정보의 각 30초 잠금은 별개이며 남은 초는 비활성 버튼에 표시합니다. 이해도 선택지는 2×2이고 오답도 진행합니다. FI+Case 유사 사례는 접기/펼치기이며 파일럿은 직원·펼침 여부·시각을 DB에 남깁니다. 첫·최종 판단 응답 수는 선택 버튼 아래에 표시합니다. AI 추천 상단의 Authority Cue를 쿨 핑크로 강조하고 하단에 오류 가능성 문구를 둡니다. Figma G1~G6 화면에도 같은 색을 반영했습니다.
+- 2026-11-09 후속: Authority Cue 아이콘도 앱·Figma G1~G6에서 `#9F3679`입니다. FI 및 FI+Case 범례에는 양수/음수/절댓값의 의미를 똑같이 안내합니다. NCS-6 선택지는 숫자 없이 다섯 단계 모두 한글로 표시합니다. 마지막 자유서술은 `선택`이며 빈 응답으로도 완료할 수 있습니다. 첫 화면의 데모 링크·안내는 제거했고, 참가자 번호 예시는 `MT-001`입니다.
+- 이해도 오답도 다음 화면으로 진행하며, 정오답은 참가자에게 표시하지 않습니다. 선택지 원응답과 별도 정오답·응답 시간·라운드/Risk를 저장합니다. 오답을 자동 제외 기준으로 사용하지 않으며, 정답자만의 민감도 분석은 연구자 조회 시 선택할 수 있습니다.
+- 짧은 노트북 화면은 본문 한 영역을 스크롤하고 상단 진행 안내·하단 행동 버튼을 계속 보여줍니다. 시나리오 부분별 방문과 유사 사례 직원별 펼침/접힘·열람 횟수·열린 시간은 별도 DB 표에 기록합니다.
 
 - 6개 참가자 간 조건과 4개 Risk×A/B 순서를 사용합니다. 본 실험에서는 서버에서 균형 무작위 배정해야 합니다. 미리보기는 화면 점검을 위해 조건을 직접 선택합니다.
 - 라운드당 직원12명. 정답상 배정5명/AURA추천5명이지만 참가자 선택 인원에는 제한이 없습니다. TP3/FP2/TN5/FN2입니다.
@@ -49,7 +52,7 @@ npm run dev
 
 ## 확인한 내용
 
-2026-11-09 최신 변경은 타입 검사·배포용 빌드, 실험 규칙 테스트 10개, 전체 흐름·6조건·데모 계정·본인 확인 UI 브라우저 테스트 4개를 통과했습니다. 인증 DB 함수는 합성 신청·참가자로 성공/실패·마스킹을 검증하고 합성 자료를 삭제했습니다. 유사 사례 펼침/접힘 2건은 로컬 API→원격 DB 저장을 확인하고 합성 자료를 삭제했습니다. 이전 배포에서는 기존 인증과 파일럿 흐름을 임시 참가자로 검증했습니다.
+2026-11-09 후속 변경은 타입 검사·배포용 빌드, 실험 규칙 테스트 10개, 전체 흐름·6조건·데모 계정·본인 확인·낮은 노트북 화면의 브라우저 테스트 5개를 통과했습니다. 합성 참가자 1명의 API→원격 DB 검증으로 NCS 원점수·역채점, 시나리오 부분별 방문, 오답 이해도 응답, 직원별 사례 반복 열람, 조건 준수/RAIR·RSR 조회, 빈 자유서술 완료를 확인하고 합성 기록만 정리했습니다. 기존 DB 판단 144행과 분석 뷰의 결과도 독립 계산으로 대조했습니다.
 
 ## 자료와 다음 연결 작업
 
@@ -80,7 +83,7 @@ npm run dev
 
 ### DB 초기 구조 적용
 
-테이블·제약·접근 제한은 [최신 인증·사례 열람](supabase/migrations/20261109010000_identity_and_case_expansion.sql), [초기 스키마](supabase/migrations/20261102000000_initial_experiment_schema.sql), [PIN·세션 스키마](supabase/migrations/20261102010000_participant_pin_sessions.sql), [재발급 시 세션 취소](supabase/migrations/20261102020000_revoke_sessions_on_pin_reissue.sql), [NCS·이해도 확인](supabase/migrations/20261109000000_ncs_attention_check.sql)에 있습니다. 원격 DB에 적용한 뒤 타입을 생성해 테이블을 확인했습니다. Publishable key로 `participants`·`survey_answers`를 조회하면 401, 비공개 모집 스키마를 조회하면 406을 반환합니다. **다른 프로젝트에 같은 구조를 재현할 때** 다음 순서로 적용합니다.
+테이블·제약·접근 제한은 [행동 로그](supabase/migrations/20261109030000_behavioral_logs.sql), [분석 뷰](supabase/migrations/20261109040000_analysis_views.sql), [최신 인증·사례 열람](supabase/migrations/20261109010000_identity_and_case_expansion.sql), [초기 스키마](supabase/migrations/20261102000000_initial_experiment_schema.sql), [PIN·세션 스키마](supabase/migrations/20261102010000_participant_pin_sessions.sql), [재발급 시 세션 취소](supabase/migrations/20261102020000_revoke_sessions_on_pin_reissue.sql), [NCS·이해도 확인](supabase/migrations/20261109000000_ncs_attention_check.sql)에 있습니다. 원격 DB에 적용한 뒤 조회를 확인했습니다. Publishable key로 `participants`·`survey_answers`를 조회하면 401, 비공개 모집 스키마를 조회하면 406을 반환합니다. **다른 프로젝트에 같은 구조를 재현할 때** 다음 순서로 적용합니다.
 
 ```sh
 cd /Users/yein/Developer/projects/aura
@@ -214,9 +217,9 @@ erDiagram
 | `round_no` | 라운드 화면이면 1/2, 공통 시작·마무리 화면이면 비어 있습니다. |
 | `page_key` | `demographics`, `ppd`, `ncs`, `scenario`, `attention`, `risk`, `browse`, `initial`, `loading`, `advice`, `final`, `trust`, `post` 등 안정적인 화면 이름. |
 | `entered_at`, `left_at` | 화면에 들어온 시각과 다음 화면으로 나간 시각. 브라우저가 갑자기 닫히면 이탈 시각은 비어 있을 수 있습니다. |
-| `last_seen_at` | 화면이 열린 동안 주기적으로 서버에 남기는 마지막 접속 시각. 갑작스러운 종료 시 확인 가능한 마지막 지점입니다. |
-| `wall_ms` | 진입부터 이탈까지의 전체 밀리초. 탭이 숨겨진 시간도 포함합니다. |
-| `active_ms` | 화면이 실제로 보인 동안의 밀리초. 숨긴 탭·중단 시간을 빼고 누적합니다. |
+| `last_seen_at` | 현재 구현에서는 방문이 닫힐 때 갱신하는 시각입니다. 주기적 heartbeat는 구현하지 않았습니다. |
+| `wall_ms` | 한 번의 방문 진입부터 이탈·탭 숨김까지의 밀리초. 복귀 시 새 방문 행을 엽니다. |
+| `active_ms` | 현재 구현에서는 기본값 0이며 분석 지표로 사용하지 않습니다. |
 | `exit_reason` | 다음 단계·이전 화면 확인·새로고침·재접속·중단 등 방문이 끝난 이유. |
 
 #### 6. `survey_answers` — 설문 원응답
@@ -256,9 +259,9 @@ erDiagram
 | `payload` | A/B 직원 특성값, 정답, AURA 추천·FI, 연결된 유사 사례와 해당 사례 값을 담은 고정 JSON. 참가자별로 반복 저장하지 않습니다. |
 | `created_at` | 자료 버전을 등록한 시각. |
 
-유사 사례는 FI 아래 자동으로 표시되고 별도 열기 동작이 없으므로 `content_views` 테이블은 만들지 않습니다. AI 추천 정보 화면의 체류 시간은 `page_visits`에 기록합니다. 이 시간만으로 개별 사례를 실제로 읽었다고 해석하지 않습니다.
+유사 사례는 FI+Case 조건에서 직원별 접기/펼치기로 표시됩니다. `case_expansion_events`에 각 이벤트 시각, `case_expansion_summary`에 최초 열람 시각·횟수·최종 상태·직원별 펼친 시간 합계를 기록합니다. `scenario_segment_visits`에는 시나리오 각 부분의 방문을, `attention_check_responses`에는 원응답과 연결된 정답 코드·정오답·응답 시간을 둡니다. AI 추천 화면의 방문은 `page_visits`에도 남으며 단순 체류 시간을 읽었다는 증거로 해석하지 않습니다.
 
-> **시간 기록:** 01~14 화면과 로딩 화면을 각각 기록합니다. 다음 화면으로 넘어갈 때 진입·이탈 시각과 소요 시간을 확정하고, 페이지가 열린 동안에는 주기적으로 `last_seen_at`과 보이는 시간을 저장합니다. 숨긴 탭의 시간은 `wall_ms`에만 넣고 `active_ms`에서는 뺍니다. 전체 경과는 시작~완료 시각, 전체 활동 시간은 각 방문의 `active_ms` 합계로 계산합니다. 브라우저가 갑자기 종료되면 마지막 접속 시각까지만 확인할 수 있으므로 미완료 방문으로 구분합니다.
+> **시간 기록:** 화면과 로딩은 `page_visits`에 방문별로 기록합니다. 다음 단계 이동·탭 숨김·이전 화면 확인 시 방문을 닫고 복귀 시 다시 엽니다. 시나리오 부분별 시간은 `scenario_segment_visits`, 사례별 펼친 시간은 `case_expansion_summary`에서 확인합니다. 브라우저가 강제 종료되어 이탈 요청이 전달되지 않으면 열린 방문이 남을 수 있으므로 해당 행은 미완료로 구분합니다. `active_ms`의 합계는 현재 사용하지 않습니다.
 
 | 화면 | 저장할 내용 |
 | --- | --- |
@@ -291,6 +294,12 @@ RAIR·RSR·과신/과소의존은 `decisions`의 첫·최종 판단과 버전이
 2. 모집 신청 UUID를 확인하고 `npm run participant:issue -- pilot <모집 신청 UUID>`로 연결된 코드를 발급합니다. 기존 PDF 두 파일은 등록되어 있습니다.
 3. 참가자는 [aura.yeinchoi.com](https://aura.yeinchoi.com)에서 코드와 휴대전화 뒤 4자리를 입력하고 마스킹된 정보를 확인한 뒤 한 화면에서 참여 여부를 선택합니다. 설명문·동의서 PDF는 링크로 열 수 있습니다. 수락이 DB에 저장된 뒤 과제를 시작할 수 있습니다.
 4. 종료 후 진행자는 `npm run pilot:report`로 앱 전체 시간·화면별 시간·자유 응답을 확인합니다. 설문 문항별 원응답과 직원별 첫·최종 판단은 Supabase의 `survey_answers`와 `decisions`에 저장됩니다.
+
+### 분석 자료 조회
+
+진행자용 DB 뷰 `analysis_employee_decisions`는 직원별 원판단·기준 충족 여부를, `analysis_round_criteria`는 Risk·첫/최종 판단별 필수 위반 배정률·필수 통과 보류율·추가조건 준수율을 제공합니다. 분모가 0이면 비율은 `NULL`입니다. `analysis_round_reliance`는 조건부 RAIR/RSR의 분자·분모·비율을, `analysis_ncs_scores`는 NCS-6 원점수 6개·3/4번 보정 점수·합계·평균을 제공합니다. `attention_check_responses`와 `case_expansion_summary`는 각각 정오답과 직원별 열람 요약이며, 원본 이벤트는 `case_expansion_events`에서 확인합니다. 라운드 자료는 `participant_id`, `round_id`, `round_no`, `risk_level`로 연결할 수 있습니다.
+
+본실험 주분석 조회에서는 `phase = 'main' AND is_synthetic_test = false`를 적용합니다. Attention Check의 `is_correct`는 주분석 필터로 사용하지 않습니다. 정답자 민감도 분석에서만 해당 필드를 별도로 사용합니다. `DM-001`~`DM-006` 데모는 DB 참가자 행을 만들지 않습니다. 진행자는 `node --import tsx --env-file=.env.local scripts/verify-analysis.mjs`로 원자료와 분석 뷰의 계산을 읽기 전용으로 대조할 수 있습니다.
 
 `PT-000`은 이전 배포 저장을 확인하기 위한 **합성 테스트 자료**입니다. 실제 참가자나 파일럿 분석에 포함하지 않습니다. `participants.consent_document_version`에 `SYNTHETIC_TEST_NO_HUMAN_PARTICIPANT`가 표시되고 온라인 동의 기록은 없습니다. `pilot:report`에서도 `[합성 테스트]`로 구분합니다.
 
