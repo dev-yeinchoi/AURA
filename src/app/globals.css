@@ -82,3 +82,18 @@ html,body{height:100%;overflow:hidden}
 .workspace[data-stage="post"] .accuracy label,.workspace[data-stage="post"] .free-text-label{display:block;font-size:16px;line-height:26px;font-weight:700;margin-bottom:12px}
 .workspace[data-stage="post"] .accuracy{margin-bottom:26px}
 @media(max-width:900px){.aura-intro-top>div:nth-child(2){width:220px}.aura-intro-top .authority-badge{width:210px;font-size:14px}.recap b{font-size:16px}}
+
+/* The same cool-pink treatment is applied to every Authority Cue condition. */
+.aura-intro{background:#fdf6fb;border:1px solid #d661a3;box-shadow:0 3px 12px #9f36791a}
+.aura-intro-top>.icon{background:#f8dfef}
+.aura-intro h2{color:#9f3679}
+.aura-intro .authority-badge{background:#f5d9eb;color:#9f3679}
+.aura-intro .definitions{border-top-color:#ecc9df}
+.aura-error-note{margin-top:10px;padding-top:8px;border-top:1px solid #ecc9df;color:#736274;font-size:11px;line-height:16px;text-align:right}
+.case-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:32px;padding:0;border:0;background:transparent;color:var(--text);font-size:14px;font-weight:700;text-align:left}
+.case-toggle span{color:var(--blue);font-size:12px;font-weight:500}
+.decision-progress{text-align:center;color:var(--muted);font-size:12px;margin-top:9px}
+.identity-confirm{display:flex;flex-wrap:wrap;gap:10px 16px;padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--page)}
+.identity-confirm h2,.identity-confirm p{width:100%}
+.identity-confirm p{font-size:14px}
+.identity-confirm button{flex:1;min-width:180px}

@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { scoreNcs6 } from "../src/lib/ncs.ts";
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) {
   throw new Error("Supabase 환경 변수가 필요합니다.");
@@ -28,6 +29,14 @@ for (const participant of participants) {
   if (visitError) throw visitError;
   for (const visit of visits) {
     console.log(`  ${visit.round_no ?? "공통"} / ${visit.page_key}: ${visit.wall_ms === null ? "진행 중" : `${(visit.wall_ms / 1000).toFixed(1)}초`}`);
+  }
+  const { data: ncsAnswers, error: ncsError } = await db.from("survey_answers")
+    .select("question_key, answer_number").eq("participant_id", participant.id)
+    .eq("instrument", "ncs_6").order("question_key");
+  if (ncsError) throw ncsError;
+  if (ncsAnswers.length === 6 && ncsAnswers.every(row => row.answer_number !== null)) {
+    const score = scoreNcs6(ncsAnswers.map(row => row.answer_number));
+    console.log(`  사전 설문(2): 합계 ${score.total}/30, 평균 ${score.mean.toFixed(2)}/5 (3·4번 역채점)`);
   }
   const { data: comment, error: commentError } = await db.from("survey_answers")
     .select("answer_text").eq("participant_id", participant.id)

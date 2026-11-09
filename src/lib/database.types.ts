@@ -69,6 +69,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      case_expansion_events: {
+        Row: { id: string; participant_id: string; round_no: number; employee_id: string; expanded: boolean; changed_at: string }
+        Insert: { id?: string; participant_id: string; round_no: number; employee_id: string; expanded: boolean; changed_at?: string }
+        Update: { id?: string; participant_id?: string; round_no?: number; employee_id?: string; expanded?: boolean; changed_at?: string }
+        Relationships: []
+      }
       assignments: {
         Row: {
           assigned_at: string
@@ -289,6 +295,18 @@ export type Database = {
           },
         ]
       }
+      participant_identity_attempts: {
+        Row: { participant_id: string; failed_attempts: number; locked_until: string | null }
+        Insert: { participant_id: string; failed_attempts?: number; locked_until?: string | null }
+        Update: { participant_id?: string; failed_attempts?: number; locked_until?: string | null }
+        Relationships: []
+      }
+      participant_identity_challenges: {
+        Row: { token_digest: string; participant_id: string; expires_at: string; consumed_at: string | null }
+        Insert: { token_digest: string; participant_id: string; expires_at: string; consumed_at?: string | null }
+        Update: { token_digest?: string; participant_id?: string; expires_at?: string; consumed_at?: string | null }
+        Relationships: []
+      }
       participant_sessions: {
         Row: {
           created_at: string
@@ -505,6 +523,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      verify_participant_identity: {
+        Args: { p_code: string; p_phone_last4: string }
+        Returns: { participantId: string; participantCode: string; maskedName: string; maskedPhone: string } | null
+      }
+      issue_participant_identity: {
+        Args: { p_code: string; p_phase: string; p_application_id: string }
+        Returns: string
+      }
+      link_participant_identity: {
+        Args: { p_code: string; p_application_id: string }
+        Returns: boolean
+      }
       activate_study_documents: {
         Args: {
           p_consent_path: string

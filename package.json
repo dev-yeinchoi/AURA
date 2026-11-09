@@ -13,7 +13,7 @@
     "participant:confirm": "node --env-file=.env.local scripts/confirm-paper-consent.mjs",
     "consent:publish": "node --env-file=.env.local scripts/publish-consent-documents.mjs",
     "consent:test": "node --env-file=.env.local scripts/verify-online-consent.mjs",
-    "pilot:report": "node --env-file=.env.local scripts/pilot-report.mjs"
+    "pilot:report": "node --import tsx --env-file=.env.local scripts/pilot-report.mjs"
   },
   "dependencies": {
     "@fontsource/noto-sans-kr": "^5.3.1",

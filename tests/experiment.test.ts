@@ -4,6 +4,7 @@ import data from "../src/content/stimuli-v2.json";
 import {truth,recommendation,contributions,reliance,sequences,type Features} from "../src/lib/experiment";
 import {createPreview,normalizePreviewOrder,saveDecision,advance} from "../src/lib/preview-state";
 import {attention,attentionCorrectAnswer,ncs,ppd,riskQuestions,trust as trustQuestions,checks,usability,scenario} from "../src/content/surveys";
+import {scoreNcs6} from "../src/lib/ncs";
 
 test("두 폼의 실험 구성은 TP3 FP2 TN5 FN2",()=>{
  for(const form of Object.values(data.forms)){
@@ -54,9 +55,23 @@ test("NCS-6은 PPD 다음이고 시나리오는 두 부분과 30초를 거쳐 �
  assert.throws(()=>advance(s,s.enteredAt+30000));
  s={...s,scenarioPage:1};assert.throws(()=>advance(s,s.enteredAt+29999));
  s=advance(s,s.enteredAt+30000);assert.equal(s.stage,"attention");assert.throws(()=>advance(s));
- s={...s,answers:{"0:attention:task":2}};s=advance(s);assert.equal(s.stage,"risk");
+ s={...s,answers:{"0:attention:task":1}};s=advance(s);assert.equal(s.stage,"risk");
  assert.equal(ncs.length,6);assert.equal(ncs[0].options.length,5);
  assert.equal(attention.low.options[attentionCorrectAnswer.low-1],"사내 동아리 운영진");
  assert.equal(attention.high.options[attentionCorrectAnswer.high-1],"사내 중요 프로젝트 예산 관리 역할 배정");
+});
+test("NCS-6은 3·4번만 역채점하며 원응답 배열을 바꾸지 않음",()=>{
+ const raw=[1,2,1,5,4,3];
+ assert.deepEqual(scoreNcs6(raw),{items:[1,2,5,1,4,3],total:16,mean:16/6});
+ assert.deepEqual(raw,[1,2,1,5,4,3]);
+ assert.throws(()=>scoreNcs6([1,2,0,4,5,5]));
+});
+test("시나리오와 AI 정보는 각 단계 진입 시각부터 따로 30초를 셈",()=>{
+ let s=createPreview("low","case",0,[data.forms.A.map(e=>e.id),data.forms.B.map(e=>e.id)]);
+ s={...s,stage:"scenario",scenarioPage:1,enteredAt:1000};
+ s=advance(s,31000);assert.equal(s.stage,"attention");assert.equal(s.enteredAt,31000);
+ s={...s,stage:"advice",enteredAt:40000};
+ assert.throws(()=>advance(s,69999));
+ assert.equal(advance(s,70000).stage,"final");
 });
 test("네 순서는 두 Risk와 두 폼을 한 번씩 사용",()=>{for(const s of sequences){assert.equal(new Set(s.map(r=>r.risk)).size,2);assert.equal(new Set(s.map(r=>r.form)).size,2);}});

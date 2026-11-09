@@ -1,12 +1,12 @@
 import {sequences,type Binary,type Authority,type Explanation} from "./experiment";
 export const stages=["information","consent","demographics","ppd","ncs","scenario","attention","risk","browse","initial","loading","advice","final","trust","post","done","declined"] as const;
 export type Stage=typeof stages[number];
-export type PreviewState={version:1; mode:"preview"; authority:Authority; explanation:Explanation; sequence:number; round:0|1; stage:Stage; enteredAt:number; scenarioPage:0|1; secondRoundIntroSeen:boolean; order:string[][]; index:number; answers:Record<string,number|string>; decisions:Record<string,Binary>; events:{stage:Stage;round:number;enteredAt:number;submittedAt:number}[]};
+export type PreviewState={version:1; mode:"preview"; authority:Authority; explanation:Explanation; sequence:number; round:0|1; stage:Stage; enteredAt:number; scenarioPage:0|1; secondRoundIntroSeen:boolean; order:string[][]; index:number; answers:Record<string,number|string>; decisions:Record<string,Binary>; caseExpanded:Record<string,boolean>; events:{stage:Stage;round:number;enteredAt:number;submittedAt:number}[]};
 const sortIds=(ids:string[])=>[...ids].sort((a,b)=>a.localeCompare(b,"en",{numeric:true}));
 export function normalizePreviewOrder(state:PreviewState):PreviewState {
   const currentId=state.order[state.round][state.index];
   const order=state.order.map(sortIds);
-  return {...state,order,index:order[state.round].indexOf(currentId),scenarioPage:state.scenarioPage===1?1:0,secondRoundIntroSeen:state.secondRoundIntroSeen===true};
+  return {...state,order,index:order[state.round].indexOf(currentId),scenarioPage:state.scenarioPage===1?1:0,secondRoundIntroSeen:state.secondRoundIntroSeen===true,caseExpanded:state.caseExpanded??{}};
 }
 export function isPreviewState(value:unknown):value is PreviewState {
   if(!value || typeof value!=="object")return false;
@@ -18,7 +18,7 @@ export function isPreviewState(value:unknown):value is PreviewState {
   return !!v.decisions && typeof v.decisions==="object" && !Array.isArray(v.decisions) && Object.values(v.decisions).every(x=>x===0||x===1) && Array.isArray(v.events);
 }
 export function createPreview(authority:Authority,explanation:Explanation,sequence:number,orders:string[][]):PreviewState {
-  return {version:1,mode:"preview",authority,explanation,sequence,round:0,stage:"information",enteredAt:Date.now(),scenarioPage:0,secondRoundIntroSeen:false,order:orders.map(sortIds),index:0,answers:{},decisions:{},events:[]};
+  return {version:1,mode:"preview",authority,explanation,sequence,round:0,stage:"information",enteredAt:Date.now(),scenarioPage:0,secondRoundIntroSeen:false,order:orders.map(sortIds),index:0,answers:{},decisions:{},caseExpanded:{},events:[]};
 }
 export function saveDecision(state:PreviewState,id:string,value:Binary):PreviewState {
   if(state.stage!=="initial" && state.stage!=="final")throw new Error("판단 단계가 아닙니다.");
