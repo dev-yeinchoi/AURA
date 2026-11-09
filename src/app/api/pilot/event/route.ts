@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { checks, demographics, ppd, riskQuestions, trust, usability } from "@/content/surveys";
+import { attention, checks, demographics, ncs, ppd, riskQuestions, trust, usability } from "@/content/surveys";
 import { stages, type Stage } from "@/lib/preview-state";
 import { getParticipantSession } from "@/lib/participant-session";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
@@ -18,6 +18,8 @@ type EventBody = {
 function instrumentFor(stage: Stage, key: string) {
   if (stage === "demographics" && demographics.some(q => q.id === key)) return "demographics";
   if (stage === "ppd" && ppd.some(q => q.id === key)) return "ppd";
+  if (stage === "ncs" && ncs.some(q => q.id === key)) return "ncs_6";
+  if (stage === "attention" && key === "task") return "attention_check";
   if (stage === "risk" && riskQuestions.some(q => q.id === key)) return "risk_check";
   if (stage === "trust" && trust.some(q => q.id === key)) return "trust";
   if (stage === "post") {
@@ -31,6 +33,7 @@ function instrumentFor(stage: Stage, key: string) {
 
 function validAnswer(stage: Stage, key: string, value: unknown) {
   const questions = stage === "demographics" ? demographics : stage === "ppd" ? ppd :
+    stage === "ncs" ? ncs : stage === "attention" ? [attention.low] :
     stage === "risk" ? riskQuestions : stage === "trust" ? trust :
     stage === "post" ? [...checks, ...usability] : [];
   const question = questions.find(q => q.id === key);
@@ -48,9 +51,9 @@ export async function POST(request: Request) {
     const session = await getParticipantSession();
     if (!session || session.phase !== "pilot") return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
     const body = await request.json() as EventBody;
-    const pilotStages: Stage[] = ["demographics", "ppd", "scenario", "risk", "browse", "initial", "loading", "advice", "final", "trust", "post", "done"];
+    const pilotStages: Stage[] = ["demographics", "ppd", "ncs", "scenario", "attention", "risk", "browse", "initial", "loading", "advice", "final", "trust", "post", "done"];
     if (!pilotStages.includes(body.stage) || (body.round !== null && body.round !== 1 && body.round !== 2) ||
-        (["demographics", "ppd", "post", "done"].includes(body.stage) !== (body.round === null))) {
+        (["demographics", "ppd", "ncs", "post", "done"].includes(body.stage) !== (body.round === null))) {
       return NextResponse.json({ error: "화면 정보가 올바르지 않습니다." }, { status: 400 });
     }
     const db = createSupabaseAdmin();
@@ -72,7 +75,8 @@ export async function POST(request: Request) {
 
     if (body.previousStage && body.answers) {
       const required = body.previousStage === "demographics" ? demographics :
-        body.previousStage === "ppd" ? ppd : body.previousStage === "risk" ? riskQuestions :
+        body.previousStage === "ppd" ? ppd : body.previousStage === "ncs" ? ncs :
+        body.previousStage === "attention" ? [attention.low] : body.previousStage === "risk" ? riskQuestions :
         body.previousStage === "trust" ? trust : body.previousStage === "post" ? [...checks, ...usability] : [];
       if (required.some(question => !validAnswer(body.previousStage!, question.id, body.answers![question.id])) ||
           (body.previousStage === "post" &&
@@ -87,9 +91,9 @@ export async function POST(request: Request) {
         if (!validAnswer(body.previousStage, key, value)) {
           return NextResponse.json({ error: "문항 응답 값이 올바르지 않습니다." }, { status: 400 });
         }
-        const roundNo = instrument === "risk_check" || instrument === "trust"
+        const roundNo = instrument === "risk_check" || instrument === "trust" || instrument === "attention_check"
           ? body.previousRound : null;
-        if ((instrument === "risk_check" || instrument === "trust") && roundNo !== 1 && roundNo !== 2) continue;
+        if ((instrument === "risk_check" || instrument === "trust" || instrument === "attention_check") && roundNo !== 1 && roundNo !== 2) continue;
         let query = db.from("survey_answers")
           .select("id").eq("participant_id", session.id)
           .eq("instrument", instrument).eq("question_key", key);

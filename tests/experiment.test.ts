@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import data from "../src/content/stimuli-v2.json";
 import {truth,recommendation,contributions,reliance,sequences,type Features} from "../src/lib/experiment";
 import {createPreview,normalizePreviewOrder,saveDecision,advance} from "../src/lib/preview-state";
-import {ppd,riskQuestions,trust as trustQuestions,checks,usability,scenario} from "../src/content/surveys";
+import {attention,attentionCorrectAnswer,ncs,ppd,riskQuestions,trust as trustQuestions,checks,usability,scenario} from "../src/content/surveys";
 
 test("두 폼의 실험 구성은 TP3 FP2 TN5 FN2",()=>{
  for(const form of Object.values(data.forms)){
@@ -47,5 +47,16 @@ test("피그마 원문 문항 수·척도 및 사용자 선택 High 원문 보�
  assert.equal(ppd.length,15);assert.equal(riskQuestions.length,4);assert.equal(trustQuestions.length,3);assert.equal(checks.length,3);assert.equal(usability.length,2);
  assert.equal(ppd[0].options.length,5);assert.equal(trustQuestions[0].options.length,7);
  assert.ok(scenario.high[0].includes("예산 관리 총괄팀"));assert.ok(scenario.high[1].includes("당신의 공식 성과평가"));
+});
+test("NCS-6은 PPD 다음이고 시나리오는 두 부분과 30초를 거쳐 이해도 확인으로 진행",()=>{
+ let s=createPreview("low","none",0,[data.forms.A.map(e=>e.id),data.forms.B.map(e=>e.id)]);
+ s.stage="ppd";s=advance(s);assert.equal(s.stage,"ncs");s=advance(s);assert.equal(s.stage,"scenario");
+ assert.throws(()=>advance(s,s.enteredAt+30000));
+ s={...s,scenarioPage:1};assert.throws(()=>advance(s,s.enteredAt+29999));
+ s=advance(s,s.enteredAt+30000);assert.equal(s.stage,"attention");assert.throws(()=>advance(s));
+ s={...s,answers:{"0:attention:task":2}};s=advance(s);assert.equal(s.stage,"risk");
+ assert.equal(ncs.length,6);assert.equal(ncs[0].options.length,5);
+ assert.equal(attention.low.options[attentionCorrectAnswer.low-1],"사내 동아리 운영진");
+ assert.equal(attention.high.options[attentionCorrectAnswer.high-1],"사내 중요 프로젝트 예산 관리 역할 배정");
 });
 test("네 순서는 두 Risk와 두 폼을 한 번씩 사용",()=>{for(const s of sequences){assert.equal(new Set(s.map(r=>r.risk)).size,2);assert.equal(new Set(s.map(r=>r.form)).size,2);}});

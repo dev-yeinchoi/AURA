@@ -57,6 +57,22 @@ html,body{height:100%;overflow:hidden}
 .aura-intro-top .authority-badge{width:250px;min-height:26px;font-size:16px;line-height:26px}
 .case-result b{min-width:78px;min-height:24px;text-align:center;font-size:15px;line-height:24px;font-weight:700}
 .case-result b.held{background:#e8edf3;color:#334155}
+
+.criteria strong{font-weight:700;color:var(--text)}
+.scenario-steps{height:calc(100dvh - 385px);min-height:400px;padding:20px 24px;display:flex;flex-direction:column}
+.scenario-title{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:18px}
+.scenario-title span{color:var(--muted);font-size:14px}
+.scenario-copy{flex:1;overflow-y:auto;padding:12px 24px;min-height:0}
+.scenario-steps .scenario-copy p{font-size:16px;line-height:26px;margin:16px 0 22px}
+.scenario-controls{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:14px}
+.scenario-controls p{margin-right:auto;font-size:12px}
+.scenario-controls button{min-width:130px}
+.modal-backdrop{position:fixed;inset:0;z-index:20;background:rgba(17,22,33,.31);display:grid;place-items:center;padding:24px}
+.round-intro-modal{width:min(620px,100%);min-height:260px;background:white;border:1px solid var(--line);border-radius:16px;padding:28px 35px 30px;display:flex;flex-direction:column}
+.round-intro-modal h2{color:var(--blue);font-size:20px;font-weight:500;line-height:28px}
+.round-intro-modal p{color:var(--muted);line-height:26px;margin-top:30px}
+.round-intro-modal button{align-self:flex-end;width:182px;margin-top:auto}
+@media(max-width:760px){.scenario-controls{flex-wrap:wrap}.scenario-controls p{width:100%}.round-intro-modal{padding:24px}}
 .recap b{font-size:18px;line-height:26px;padding:4px 12px}
 .workspace[data-stage="post"] .question{margin-bottom:18px;padding-bottom:18px}
 .workspace[data-stage="post"] .question legend{margin-bottom:10px}

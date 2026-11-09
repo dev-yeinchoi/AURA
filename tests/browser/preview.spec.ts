@@ -14,9 +14,12 @@ test("설문, 두 라운드, 재접속, 잠금, 종료 흐름",async({page})=>{
  await expect.poll(()=>page.locator(".survey-container").evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
  expect(await page.evaluate(()=>window.scrollY)).toBe(0);
  await answerSurvey(page);await page.getByRole("button",{name:"다음",exact:true}).click();await expect(page.locator("fieldset.question")).toHaveCount(15);await capture(page,{path:"test-results/ppd-1440.png"});await answerSurvey(page);await page.getByRole("button",{name:"다음",exact:true}).click();
+ await expect(page.getByRole("heading",{name:"사전 설문 · NCS-6"})).toBeVisible();await expect(page.locator("fieldset.question")).toHaveCount(6);await capture(page,{path:"test-results/ncs-1440.png"});await answerSurvey(page);await page.getByRole("button",{name:"다음",exact:true}).click();
  const order=(await saved(page)).order;
  for(let round=0;round<2;round++){
-  await expect(page.getByRole("button",{name:/다음 \(/})).toBeDisabled();await page.clock.fastForward(31000);await page.getByRole("button",{name:"다음",exact:true}).click();
+  if(round===1){await expect(page.getByRole("dialog")).toContainText("다른 독립적인 상황");await capture(page,{path:"test-results/round-2-modal-1440.png"});await page.getByRole("dialog").getByRole("button",{name:"확인"}).click();}
+  await expect(page.locator(".scenario-copy p")).toHaveCount(2);if(round===0)await capture(page,{path:"test-results/scenario-1-1440.png"});await page.getByRole("button",{name:"다음 내용"}).click();await expect(page.locator(".scenario-copy p")).toHaveCount(3);if(round===0)await capture(page,{path:"test-results/scenario-2-1440.png"});await page.getByRole("button",{name:"이전 내용"}).click();await expect(page.locator(".scenario-copy p")).toHaveCount(2);await page.getByRole("button",{name:"다음 내용"}).click();await expect(page.getByRole("button",{name:"상황 확인 완료"})).toBeDisabled();await page.clock.fastForward(31000);await page.getByRole("button",{name:"상황 확인 완료"}).click();
+  await expect(page.getByRole("heading",{name:"상황 이해도 확인"})).toBeVisible();await page.getByRole("radio").nth(round===0?1:2).check();await page.getByRole("button",{name:"다음",exact:true}).click();
   await answerSurvey(page);await page.getByRole("button",{name:"다음",exact:true}).click();await expect(page.locator(".employee-card")).toHaveCount(12);await expect(page.locator(".recommendation")).toHaveCount(0);await page.getByRole("button",{name:"첫 판단 시작"}).click();
   await expect(page.locator(".timer")).toContainText(/남은 시간\s+06:00/);
   await expect(page.locator(".authority-badge")).toHaveCount(0);await expect(page.locator('.choices [aria-pressed="true"]')).toHaveCount(0);await expect(page.getByRole("button",{name:"AI 의견 확인"})).toBeDisabled();

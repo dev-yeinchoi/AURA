@@ -26,7 +26,7 @@ npm run dev
 | 기술 | Next.js + TypeScript, Supabase, Vercel 사용 확정 |
 | 디자인 원본 | [Figma 화면 디자인](https://www.figma.com/design/5ogQmEK8OAeeZ82UbKo65U/XAI---Power-Distance?node-id=355-2) |
 | 기기 | PC·노트북 브라우저. Figma 기준 1440×900, 좁은 화면은 줄바꿈·스크롤 적용 |
-| 설문 | Figma 원문 수령 및 화면 구현. PPD15/상황 인식4/Trust3/사후 설문 |
+| 설문 | PPD15 다음 NCS-6 6문항, 라운드별 이해도 확인 1문항, 상황 인식4/Trust3/사후 설문 |
 | 실험 흐름 | 두 라운드 전체 화면, 초기·최종 응답 분리, 제출 단계 잠금, 파일럿 서버 배정과 같은 브라우저 이어하기 |
 | 파일럿 운영 | [aura.yeinchoi.com](https://aura.yeinchoi.com)에 코드+PIN, 온라인 동의, 서버 조건 배정, 문항별 응답·직원별 판단·화면별/전체 시간·자유 응답 저장을 연결. 본실험 운영은 별도 검증 전 |
 | 연구 문서 | 사용자가 지정한 기존 설명문·동의서를 비공개 Supabase Storage에 등록. 공개 저장소·Vercel 배포 파일에는 포함하지 않음 |
@@ -39,13 +39,15 @@ npm run dev
 - 라운드당 직원12명. 정답상 배정5명/AURA추천5명이지만 참가자 선택 인원에는 제한이 없습니다. TP3/FP2/TN5/FN2입니다.
 - 직원은 첫 판단·최종 판단에서 01~12 순서로, AURA 정보 화면에서는 추천 먼저·번호순으로 표시합니다. 첫·최종 판단에는 각각 6분, AURA 정보에는 로딩 10초가 끝난 뒤 3분의 남은 시간을 표시합니다. AURA 정보는 최소 30초 확인해야 하며, 시간이 끝나도 자동 제출하지 않습니다. 최종 판단은 빈 선택에서 시작합니다. 정답·점수는 종료 후에도 표시하지 않습니다.
 - **High Risk는 사용자가 확인한 현재 Figma 설명문**을 사용합니다. 예산 관리 총괄팀 배정, 결정자 성과평가·기회와 회사 손실, 결정자 책임 기록을 포함합니다. 이전 직원 피해 중심 초안을 대체합니다.
+- Low/High 시나리오 원문 5문단을 앞 2문단과 뒤 3문단으로 나눠 상자 안에서 이동합니다. 두 부분을 열고 시나리오 진입 후 30초가 지나야 이해도 확인으로 진행합니다. 두 번째 라운드 시작에는 독립된 과제 안내 팝업이 표시됩니다.
+- 이해도 확인 정답은 Low 2번(사내 동아리 운영진), High 3번(사내 중요 프로젝트 예산 관리 역할 배정)입니다. 원응답을 저장하며 오답 재응답·분석 제외 기준은 아직 정하지 않았습니다. NCS-6도 원응답을 저장하고 채점 방식은 추후 정합니다.
 - **유사 사례는 ‘당시 담당자의 최종 결정’만 표시**합니다. 사례의 AURA 판단·규칙상 결과는 표시하지 않습니다. 사례 FI와 네 특성값은 유지합니다.
 - 직원24명/사례32개 수치 v2는 파일럿 검토용입니다. 사례 표시 v3의 `historicalDecision`은 가상 담당자 결정이며, 초안에서는 각 사례의 규칙상 결과와 일치하도록 설정했습니다. 실제 사람의 관측 응답이 아닙니다.
 - 파일럿은 본 분석과 분리합니다. 최종 표본·제외 기준·채점은 이후 확정합니다.
 
 ## 확인한 내용
 
-타입 검사·배포용 빌드, 실험 규칙 테스트 7개, 전체 흐름/6조건 브라우저 테스트 2개를 통과했습니다. PIN 인증과 파일럿 흐름을 임시 참가자로 브라우저→API→DB까지 로컬과 실제 배포에서 검증했습니다. 배포 검증에서는 설문 원응답 39개, 직원 판단 48개, 화면 시간 19개, 전체 완료 시각과 자유 응답을 확인하고 임시 참가자 자료를 삭제했습니다. Chrome 1440×900·1366×768·1920×1080에서 가로 넘침을 확인했고, 배포용 `/preview`는 404로 생성됩니다.
+2026-11-09 변경은 타입 검사·배포용 빌드, 실험 규칙 테스트 8개, 전체 흐름/6조건 브라우저 테스트 2개를 통과했습니다. 새 화면에서는 NCS-6, 시나리오 앞뒤 이동·30초 잠금, 이해도 문항, 두 번째 라운드 팝업을 Chrome 1440×900에서 확인했습니다. 이전 배포에서는 PIN 인증과 파일럿 흐름을 임시 참가자로 브라우저→API→DB까지 검증했으며, 당시 설문 원응답 39개·직원 판단 48개·화면 시간 19개를 확인했습니다. 새 문항의 배포 DB 저장 검증은 별도로 기록합니다.
 
 ## 자료와 다음 연결 작업
 
@@ -76,7 +78,7 @@ npm run dev
 
 ### DB 초기 구조 적용
 
-테이블·제약·접근 제한은 [초기 스키마](supabase/migrations/20261102000000_initial_experiment_schema.sql), [PIN·세션 스키마](supabase/migrations/20261102010000_participant_pin_sessions.sql), [재발급 시 세션 취소](supabase/migrations/20261102020000_revoke_sessions_on_pin_reissue.sql)에 있습니다. 원격 DB에 적용한 뒤 타입을 생성해 테이블을 확인했습니다. Publishable key로 `participants`·`survey_answers`를 조회하면 401, 비공개 모집 스키마를 조회하면 406을 반환합니다. **다른 프로젝트에 같은 구조를 재현할 때** 다음 순서로 적용합니다.
+테이블·제약·접근 제한은 [초기 스키마](supabase/migrations/20261102000000_initial_experiment_schema.sql), [PIN·세션 스키마](supabase/migrations/20261102010000_participant_pin_sessions.sql), [재발급 시 세션 취소](supabase/migrations/20261102020000_revoke_sessions_on_pin_reissue.sql), [NCS·이해도 확인](supabase/migrations/20261109000000_ncs_attention_check.sql)에 있습니다. 원격 DB에 적용한 뒤 타입을 생성해 테이블을 확인했습니다. Publishable key로 `participants`·`survey_answers`를 조회하면 401, 비공개 모집 스키마를 조회하면 406을 반환합니다. **다른 프로젝트에 같은 구조를 재현할 때** 다음 순서로 적용합니다.
 
 ```sh
 cd /Users/yein/Developer/projects/aura
@@ -209,7 +211,7 @@ erDiagram
 | --- | --- |
 | `id` (PK), `participant_id` (FK) | 이 화면 방문의 고유값과 참가자. 같은 화면을 다시 열면 새 방문 행을 만듭니다. |
 | `round_no` | 라운드 화면이면 1/2, 공통 시작·마무리 화면이면 비어 있습니다. |
-| `page_key` | `demographics`, `ppd`, `scenario`, `browse`, `initial`, `loading`, `advice`, `final`, `trust`, `post` 등 안정적인 화면 이름. |
+| `page_key` | `demographics`, `ppd`, `ncs`, `scenario`, `attention`, `risk`, `browse`, `initial`, `loading`, `advice`, `final`, `trust`, `post` 등 안정적인 화면 이름. |
 | `entered_at`, `left_at` | 화면에 들어온 시각과 다음 화면으로 나간 시각. 브라우저가 갑자기 닫히면 이탈 시각은 비어 있을 수 있습니다. |
 | `last_seen_at` | 화면이 열린 동안 주기적으로 서버에 남기는 마지막 접속 시각. 갑작스러운 종료 시 확인 가능한 마지막 지점입니다. |
 | `wall_ms` | 진입부터 이탈까지의 전체 밀리초. 탭이 숨겨진 시간도 포함합니다. |
@@ -221,8 +223,8 @@ erDiagram
 | 컬럼 | 뜻과 예시 |
 | --- | --- |
 | `id` (PK), `participant_id` (FK) | 문항 응답의 고유값과 참가자. |
-| `round_no` (NULL 허용) | Risk 확인·Trust처럼 라운드별 문항이면 1/2, 기본 정보·PPD·마무리 설문이면 `NULL`입니다. `0`을 대신 넣지 않습니다. |
-| `instrument` | `demographics`, `ppd`, `risk_check`, `trust`, `manipulation_check`, `accuracy`, `umux`, `free_text` 등 문항 묶음. |
+| `round_no` (NULL 허용) | 이해도·Risk 확인·Trust처럼 라운드별 문항이면 1/2, 기본 정보·PPD·NCS-6·마무리 설문이면 `NULL`입니다. `0`을 대신 넣지 않습니다. |
+| `instrument` | `demographics`, `ppd`, `ncs_6`, `attention_check`, `risk_check`, `trust`, `manipulation_check`, `accuracy`, `umux`, `free_text` 등 문항 묶음. |
 | `question_key` | 앱 안에서 바뀌지 않는 문항 키. 예: `gender`, `ppd_01`, `accuracy`. |
 | `figma_node_id` | 피그마 원문 문항의 노드 ID. 화면에 없는 내부 문항이라면 비울 수 있습니다. |
 | `answer_number` | 선택지 번호(예: 1~5·1~7), 또는 체감 정확도 값(0~100, 5단위). 자유서술이면 비웁니다. |
