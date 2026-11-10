@@ -59,7 +59,26 @@ test("DM-001~DM-006은 전화번호 없이 해당 G조건 데모로 연결",asyn
   await expect(page.getByRole("heading",{name:`AURA 화면 데모 · G${index}`})).toBeVisible();
   await expect(page.getByLabel("Authority")).toBeDisabled();
   await expect(page.getByLabel("Explanation")).toBeDisabled();
+  await page.getByRole("button",{name:"화면 데모 시작"}).click();
+  await expect(page.locator(".workspace")).toHaveAttribute("data-stage","information");
+  await expect(page.getByRole("heading",{name:"연구대상자를 위한 설명문"}).first()).toBeVisible();
+  await expect(page.locator(".document-frame")).toHaveAttribute("src",`/api/demo-document/information?account=${code}`);
+  await page.getByRole("button",{name:"동의서 확인"}).click();
+  await expect(page.locator(".workspace")).toHaveAttribute("data-stage","consent");
+  await expect(page.getByRole("heading",{name:"연구 참여 동의서"}).first()).toBeVisible();
+  await expect(page.locator(".document-frame")).toHaveAttribute("src",`/api/demo-document/consent?account=${code}`);
+  await expect(page.getByRole("button",{name:"다음",exact:true})).toBeDisabled();
+  await page.getByRole("radio",{name:"동의하고 참여"}).check();
+  await page.getByRole("button",{name:"다음",exact:true}).click();
+  await expect(page.locator(".workspace")).toHaveAttribute("data-stage","demographics");
  }
+ for(const [kind,code] of [["information","DM-001"],["consent","DM-006"]]){
+  const response=await page.request.get(`/api/demo-document/${kind}?account=${code}`);
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toBe("application/pdf");
+  expect((await response.body()).subarray(0,5).toString()).toBe("%PDF-");
+ }
+ expect((await page.request.get("/api/demo-document/information?account=DM-999")).status()).toBe(404);
 });
 test("참가자 번호·전화 뒤 4자리 확인 후 본인 정보 확인 버튼을 눌러야 시작 가능",async({page})=>{
  await page.route("**/api/participant/session",route=>route.fulfill({status:401,contentType:"application/json",body:JSON.stringify({authenticated:false})}));
